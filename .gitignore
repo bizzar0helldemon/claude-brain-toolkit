@@ -1,0 +1,22 @@
+# Personal content — excluded by default to prevent accidental publishing
+# Remove these lines if you're using a private repo and want to track your content
+daily_notes/*.md
+intake/sessions/*.md
+intake/discoveries/*.md
+people/*.md
+IDENTITY.md
+
+# Keep template/index files tracked
+!projects/_INDEX.md
+!creative/_INDEX.md
+!intake/_INDEX.md
+!prompts/_INDEX.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
