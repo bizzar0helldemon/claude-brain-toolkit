@@ -13,7 +13,7 @@ The toolkit is grounded in the [AI Fluency Framework](frameworks/ai-fluency-fram
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/claude-brain-toolkit.git
+git clone https://github.com/bizzar0helldemon/claude-brain-toolkit.git
 ```
 
 ### 2. Install global skills
