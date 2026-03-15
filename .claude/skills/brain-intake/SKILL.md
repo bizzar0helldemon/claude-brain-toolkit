@@ -25,6 +25,24 @@ If no topic is provided, offer these options:
 7. **Communication preferences** — how they want Claude to work with them
 8. **Custom topic** — anything else they want captured
 
+## ODT File Support
+
+If the user provides a path to an `.odt` file (as $ARGUMENTS or during conversation), convert it to markdown before processing:
+
+```bash
+pandoc "path/to/file.odt" -t markdown
+```
+
+**Prerequisite:** Install pandoc (`winget install JohnMacFarlane.Pandoc` on Windows, `brew install pandoc` on macOS, `apt install pandoc` on Linux).
+
+After conversion:
+1. Read the converted markdown content
+2. Use it as source material for the interview — ask the user about what's in the document
+3. Weave the content into the appropriate brain files (creative writing, identity details, etc.)
+4. The `.odt` file is never modified — only read
+
+This allows intake of OpenOffice text documents that Claude can't read natively.
+
 ## Interview Process
 
 ### Step 1: Open the Conversation

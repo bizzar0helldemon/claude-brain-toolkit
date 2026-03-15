@@ -20,6 +20,7 @@ Search the provided path recursively for content files:
 
 **File types to look for:**
 - `.md`, `.txt` — writing, notes, scripts
+- `.odt` — OpenOffice text documents (convert to markdown before reading — see ODT Conversion below)
 - `.doc`, `.docx` — documents (note: can't read contents, but can catalog)
 - `.pdf` — documents, scripts
 - `.py`, `.js`, `.html` — code that might be creative projects
@@ -131,6 +132,28 @@ files-ingested: N
 **Files ingested:** N into [list of brain locations]
 **Discovery log:** intake/discoveries/YYYY-MM-DD-path.md
 ```
+
+## ODT Conversion
+
+When `.odt` files are found, convert them to markdown using pandoc before reading:
+
+```bash
+pandoc "path/to/file.odt" -t markdown
+```
+
+**Prerequisite:** Install pandoc (`winget install JohnMacFarlane.Pandoc` on Windows, `brew install pandoc` on macOS, `apt install pandoc` on Linux).
+
+**Process:**
+1. Convert the `.odt` file to markdown via pandoc (outputs to stdout)
+2. Read the converted markdown content
+3. Use it the same way you'd use any `.md` file — categorize, present to user, ingest if selected
+4. When ingesting, save as `.md` in the brain with proper frontmatter — do NOT copy the `.odt` file itself
+
+**Notes:**
+- Pandoc preserves headings, lists, bold/italic, and basic formatting
+- Some `.odt` files may have complex tables or embedded images — pandoc handles tables, images are noted as `![](...)` references
+- If pandoc fails on a file, log it as "conversion failed" and skip — don't block the whole scan
+- The original `.odt` file is never modified or moved
 
 ## Important Notes
 
