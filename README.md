@@ -8,6 +8,20 @@ Claude Brain is an Obsidian-compatible vault paired with 6 Claude Code slash com
 
 The toolkit is grounded in the [AI Fluency Framework](frameworks/ai-fluency-framework.md) — a set of four competencies (Delegation, Description, Discernment, Diligence) for working effectively, efficiently, ethically, and safely with AI.
 
+## New: Claude Desktop Skill + Onboarding Kit
+
+**Don't use the terminal?** No problem. The **Brain Assistant** is a Claude Desktop skill that gives you brain powers without the CLI:
+
+1. Download `desktop-skill/` from this repo
+2. Zip the contents and add to a Claude Desktop project
+3. The skill detects whether you have a vault and walks you through setup
+
+**Setting up a team member?** The `onboarding-kit/` has everything needed to go from zero to a fully configured Claude Code environment — automated setup script, global skills, commands, and a step-by-step guide.
+
+See [Desktop Skill](#desktop-skill) and [Onboarding Kit](#onboarding-kit) below.
+
+---
+
 ## Quick Start
 
 ### 1. Clone the repo
@@ -89,7 +103,9 @@ claude-brain-toolkit/
 ├── archive/               # Raw CLAUDE.md backups from scanned projects
 ├── IDENTITY.md            # Your personal profile (built via /brain-intake)
 ├── CLAUDE.md              # Hub document + configuration
-└── brain-scan-templates.md # Canonical templates for all document types
+├── brain-scan-templates.md # Canonical templates for all document types
+├── desktop-skill/         # Brain Assistant skill for Claude Desktop
+└── onboarding-kit/        # Full setup package for new users
 ```
 
 ### What Goes Where
@@ -159,6 +175,66 @@ This toolkit is built on the Framework for AI Fluency by Dakan & Feller — four
 | **Diligence** | Taking full responsibility for AI-assisted work |
 
 See [frameworks/ai-fluency-framework.md](frameworks/ai-fluency-framework.md) for the full reference, and [frameworks/ai-governance-policy.md](frameworks/ai-governance-policy.md) for a template to define your own AI governance standards.
+
+## Desktop Skill
+
+The **Brain Assistant** (`desktop-skill/`) is a Claude Desktop skill that makes the brain vault accessible without the CLI. It includes:
+
+- **SKILL.md** — Conversation flow, intent detection, bootstrap/onboarding, CLI nudges
+- **BRAIN_REFERENCE.md** — Vault structure, file formats, frontmatter specs, CLI command mapping
+
+### What It Does
+
+| Mode | Trigger | Behavior |
+|------|---------|----------|
+| **Bootstrap** | No vault attached | Asks "comfortable with a terminal?" → CLI setup path or Desktop-first scaffold |
+| **Explore** | Questions about your vault | Searches project knowledge and answers |
+| **Draft** | "Log this", "write a case study" | Generates vault-formatted content as downloadable artifacts |
+| **Think** | "Help me brainstorm", "prep me for" | Uses brain context for strategic conversation |
+| **Educate** | "What's GSD?", "set up CLI" | Introduces CLI commands gradually |
+
+### Setup
+
+1. Download the `desktop-skill/` directory
+2. Zip `SKILL.md` and `BRAIN_REFERENCE.md` together
+3. In Claude Desktop, create a project and add the zip as a skill (or add both files as project knowledge)
+4. Add your vault's `CLAUDE.md` to the same project for full brain access
+
+The skill gradually introduces CLI equivalents — after using Desktop for a while, the terminal commands will feel familiar.
+
+---
+
+## Onboarding Kit
+
+The `onboarding-kit/` directory contains everything needed to set up a new user with the full Claude Code + Brain environment.
+
+### What's Included
+
+| File | Purpose |
+|------|---------|
+| `setup.sh` | Automated setup script — installs GSD, superpowers, skills, clones vault |
+| `SETUP_INSTRUCTIONS.md` | Master guide — feed to Claude Desktop and it walks the user through everything |
+| `skills/` | 5 global CLI skills ready to copy to `~/.claude/skills/` |
+| `commands/brain/scan.md` | The `/brain:scan` command for full filesystem scanning |
+| `CLAUDE_DESKTOP_SETUP.md` | How to connect Desktop and CLI to the same vault |
+| `CLAUDE_CODE_SETUP_GUIDE_REFERENCE.md` | Full technical reference for the environment |
+
+### Two Setup Paths
+
+**Automated (for terminal users):**
+```bash
+cd onboarding-kit
+bash setup.sh
+```
+
+**Guided (via Claude Desktop):**
+1. Add `SETUP_INSTRUCTIONS.md` to a Claude Desktop project
+2. Tell Claude "set me up"
+3. Follow the step-by-step walkthrough
+
+Both paths end at the same place: a fully configured Claude Code CLI with a personal brain vault.
+
+---
 
 ## Optional: Obsidian CLI
 
