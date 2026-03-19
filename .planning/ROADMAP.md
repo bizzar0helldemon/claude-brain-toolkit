@@ -1,0 +1,86 @@
+# Roadmap: Claude Brain Mode
+
+## Overview
+
+Claude Brain Mode transforms the claude-brain-toolkit from a set of manually-invoked skills into an active, autonomous knowledge partner. The build follows a strict dependency chain — hook infrastructure first, then session lifecycle automation built on top of it, then first-run onboarding to safely hand the system to real users, then advanced intelligence features (auto-capture at milestones, error pattern recognition) that need a populated vault to be useful. Every phase delivers a coherent, independently verifiable capability before the next layer is built.
+
+## Phases
+
+**Phase Numbering:**
+- Integer phases (1, 2, 3): Planned milestone work
+- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+
+Decimal phases appear between their surrounding integers in numeric order.
+
+- [ ] **Phase 1: Hook Infrastructure** - Safe, validated hook scaffolding with BRAIN_PATH library, stop-loop guard, exit code discipline, and brain statusline indicator
+- [ ] **Phase 2: Session Lifecycle** - Automatic vault context injection at session start, pre-clear capture, and token budget management
+- [ ] **Phase 3: Onboarding + Entry Point** - First-run guided setup and `claude --agent brain-mode` launch path
+- [ ] **Phase 4: Intelligence Layer** - Milestone auto-capture and error pattern recognition on top of a populated vault
+
+## Phase Details
+
+### Phase 1: Hook Infrastructure
+**Goal**: Brain mode has a safe, working hook scaffold that all future features are built on
+**Depends on**: Nothing (first phase)
+**Requirements**: HOOK-01, HOOK-02, HOOK-03, HOOK-04, STAT-01
+**Success Criteria** (what must be TRUE):
+  1. A hook fires at each lifecycle event (SessionStart, PreCompact, Stop, PostToolUseFailure) and completes without looping
+  2. Attempting a blocking hook with `exit 1` does NOT block tool execution; using `exit 2` does
+  3. Running a hook when BRAIN_PATH is unset or invalid produces a specific, actionable error message rather than silently writing to a wrong path
+  4. Hook JSON output passes `| jq .` validation without corruption from shell profile output
+  5. Brain emoji appears in the Claude Code statusline whenever brain mode is active
+**Plans**: TBD
+
+Plans:
+- [ ] 01-01: TBD
+
+### Phase 2: Session Lifecycle
+**Goal**: Every session automatically loads relevant vault context, and knowledge is captured before context is cleared
+**Depends on**: Phase 1
+**Requirements**: LIFE-01, LIFE-02, LIFE-03
+**Success Criteria** (what must be TRUE):
+  1. Opening a project in brain mode surfaces that project's recent pitfalls and last-known state without the user asking
+  2. Invoking `/clear` triggers an automatic brain-capture and daily-note entry before the context is wiped
+  3. SessionStart vault injection stays under 2,000 tokens (verifiable via `claude --verbose`) so session length is not noticeably shortened
+**Plans**: TBD
+
+Plans:
+- [ ] 02-01: TBD
+
+### Phase 3: Onboarding + Entry Point
+**Goal**: Any user can start brain mode from scratch and have a working vault within one guided session
+**Depends on**: Phase 2
+**Requirements**: ONBR-01, ONBR-02
+**Success Criteria** (what must be TRUE):
+  1. A user with no BRAIN_PATH set runs `claude --agent brain-mode` and is guided step-by-step to create a vault directory and set the env var — no manual documentation needed
+  2. After onboarding completes, running `claude --agent brain-mode` in any project directory loads brain mode with vault context from BRAIN_PATH
+  3. A user whose vault directory has moved can re-run onboarding and the new path is picked up by all subsequent hooks without editing config files manually
+**Plans**: TBD
+
+Plans:
+- [ ] 03-01: TBD
+
+### Phase 4: Intelligence Layer
+**Goal**: Brain mode actively captures knowledge at meaningful moments and surfaces past error solutions without the user invoking any commands
+**Depends on**: Phase 3
+**Requirements**: LIFE-04, LIFE-05
+**Success Criteria** (what must be TRUE):
+  1. After a `git commit` or PR merge, a brain-capture entry is automatically created in the vault without any user action
+  2. When an error occurs that matches a pattern already in the vault, the brain surfaces the past solution in the current session context
+  3. The pattern store (`pattern-store.json`) records encounter counts that increment correctly across sessions, verifiable by inspecting the file
+**Plans**: TBD
+
+Plans:
+- [ ] 04-01: TBD
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 1 → 2 → 3 → 4
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Hook Infrastructure | 0/TBD | Not started | - |
+| 2. Session Lifecycle | 0/TBD | Not started | - |
+| 3. Onboarding + Entry Point | 0/TBD | Not started | - |
+| 4. Intelligence Layer | 0/TBD | Not started | - |

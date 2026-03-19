@@ -66,24 +66,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOOK-01 | — | Pending |
-| HOOK-02 | — | Pending |
-| HOOK-03 | — | Pending |
-| HOOK-04 | — | Pending |
-| LIFE-01 | — | Pending |
-| LIFE-02 | — | Pending |
-| LIFE-03 | — | Pending |
-| LIFE-04 | — | Pending |
-| LIFE-05 | — | Pending |
-| STAT-01 | — | Pending |
-| ONBR-01 | — | Pending |
-| ONBR-02 | — | Pending |
+| HOOK-01 | Phase 1 | Pending |
+| HOOK-02 | Phase 1 | Pending |
+| HOOK-03 | Phase 1 | Pending |
+| HOOK-04 | Phase 1 | Pending |
+| STAT-01 | Phase 1 | Pending |
+| LIFE-01 | Phase 2 | Pending |
+| LIFE-02 | Phase 2 | Pending |
+| LIFE-03 | Phase 2 | Pending |
+| ONBR-01 | Phase 3 | Pending |
+| ONBR-02 | Phase 3 | Pending |
+| LIFE-04 | Phase 4 | Pending |
+| LIFE-05 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 after roadmap creation*
