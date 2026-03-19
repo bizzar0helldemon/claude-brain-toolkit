@@ -29,10 +29,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Running a hook when BRAIN_PATH is unset or invalid produces a specific, actionable error message rather than silently writing to a wrong path
   4. Hook JSON output passes `| jq .` validation without corruption from shell profile output
   5. Brain emoji appears in the Claude Code statusline whenever brain mode is active
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: TBD
+- [ ] 01-01-PLAN.md — BRAIN_PATH validation library + settings.json hook registration
+- [ ] 01-02-PLAN.md — Lifecycle hook scripts (all 4) + statusline script
 
 ### Phase 2: Session Lifecycle
 **Goal**: Every session automatically loads relevant vault context, and knowledge is captured before context is cleared
@@ -80,7 +81,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Hook Infrastructure | 0/TBD | Not started | - |
+| 1. Hook Infrastructure | 0/2 | Planning complete | - |
 | 2. Session Lifecycle | 0/TBD | Not started | - |
 | 3. Onboarding + Entry Point | 0/TBD | Not started | - |
 | 4. Intelligence Layer | 0/TBD | Not started | - |
