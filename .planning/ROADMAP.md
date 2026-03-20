@@ -43,10 +43,11 @@ Plans:
   1. Opening a project in brain mode surfaces that project's recent pitfalls and last-known state without the user asking
   2. Invoking `/clear` triggers an automatic brain-capture and daily-note entry before the context is wiped
   3. SessionStart vault injection stays under 2,000 tokens (verifiable via `claude --verbose`) so session length is not noticeably shortened
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md — Brain context library (vault query, token budget, project matching) + SessionStart context injection
+- [ ] 02-02-PLAN.md — Stop/PreCompact capture triggers + end-to-end verification
 
 ### Phase 3: Onboarding + Entry Point
 **Goal**: Any user can start brain mode from scratch and have a working vault within one guided session
@@ -82,6 +83,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Hook Infrastructure | 2/2 | Complete | 2026-03-20 |
-| 2. Session Lifecycle | 0/TBD | Not started | - |
+| 2. Session Lifecycle | 0/2 | Not started | - |
 | 3. Onboarding + Entry Point | 0/TBD | Not started | - |
 | 4. Intelligence Layer | 0/TBD | Not started | - |
