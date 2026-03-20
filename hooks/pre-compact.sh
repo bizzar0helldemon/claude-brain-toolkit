@@ -6,7 +6,9 @@ if ! brain_path_validate; then
   exit 1
 fi
 
-# Phase 1: scaffold only — future phases add pre-compact capture here
-TRIGGER=$(printf '%s' "$HOOK_INPUT" | jq -r '.trigger // "auto"')
-emit_json '{"status":"ok","brain_mode":true,"trigger":"'"$TRIGGER"'"}'
+brain_log_error "PreCompact" "Capture trigger fired"
+
+INSTRUCTION="Context is about to be compacted. Please run /brain-capture to preserve any useful patterns before the context is reduced."
+COMPACT_JSON=$(jq -n --arg ctx "$INSTRUCTION" '{"hookSpecificOutput":{"hookEventName":"PreCompact","additionalContext":$ctx}}')
+emit_json "$COMPACT_JSON"
 exit 0

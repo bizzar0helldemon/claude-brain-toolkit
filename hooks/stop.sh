@@ -16,6 +16,9 @@ if ! brain_path_validate; then
   exit 0
 fi
 
-# Phase 1: scaffold only — future phases add pre-stop capture here
-emit_json '{"status":"ok","brain_mode":true}'
+brain_log_error "Stop" "Capture trigger fired"
+
+REASON="Before ending this session, please run /brain-capture to preserve any useful patterns from this conversation, then run /daily-note to log a session summary. After completing both, briefly confirm what was captured (e.g., 'Brain captured: N learnings, daily note updated') and then you can stop."
+BLOCK_JSON=$(jq -n --arg reason "$REASON" '{"decision":"block","reason":$reason}')
+emit_json "$BLOCK_JSON"
 exit 0
