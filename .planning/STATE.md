@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 1 of 4 (Hook Infrastructure)
-Plan: 2 of 2 in current phase (complete)
-Status: Phase 1 complete
-Last activity: 2026-03-20 — Completed 01-02 (lifecycle hooks + statusline)
+Phase: 2 of 4 (Session Lifecycle)
+Plan: 1 of 2 in current phase (in progress)
+Status: In progress
+Last activity: 2026-03-20 — Completed 02-01 (brain context library + session hook)
 
-Progress: [██░░░░░░░░] 25% (Phase 1 of 4 complete)
+Progress: [███░░░░░░░] 37% (Phase 1 complete + Plan 02-01 complete)
 
 ## Performance Metrics
 
@@ -30,8 +30,8 @@ Progress: [██░░░░░░░░] 25% (Phase 1 of 4 complete)
 | Phase 1 | 2 | ~7 min | ~3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4 min), 01-02 (3 min)
-- Trend: Stable
+- Last 5 plans: 01-01 (4 min), 01-02 (3 min), 02-01 (15 min)
+- Trend: 02-01 longer due to subshell bug discovery and fix
 
 *Updated after each plan completion*
 
@@ -50,6 +50,8 @@ Recent decisions affecting current work:
 - BRAIN_PATH must be set in both shell profile AND settings.json env block (subshells don't load profiles)
 - Dual-channel errors in brain-path.sh: contextual multi-line stderr for humans, JSON stdout for Claude
 - emit_json exits 0 on invalid JSON (formatting bugs must not break sessions)
+- _BRAIN_CONTEXT_STATE_FILE temp-file pattern for propagating subshell state to parent (bash $() cannot mutate parent scope)
+- Pitfall count in summary includes only project-specific pitfall entries, not global ones
 
 ### Pending Todos
 
@@ -65,5 +67,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Completed 01-02 (lifecycle hook scripts + statusline) — Phase 1 complete
-Resume file: .planning/phases/02-session-lifecycle/ (Phase 2 plans TBD — run /gsd:plan-phase for Phase 2)
+Stopped at: Completed 02-01 (brain context library + session hook)
+Resume file: .planning/phases/02-session-lifecycle/02-02-PLAN.md
