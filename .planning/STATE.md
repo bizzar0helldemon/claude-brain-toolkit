@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 1 of 4 (Hook Infrastructure)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-19 — Roadmap created, ready for phase planning
+Plan: 1 of 2 in current phase (01-01 complete, 01-02 next)
+Status: In progress
+Last activity: 2026-03-20 — Completed 01-01-PLAN.md (BRAIN_PATH validation + settings.json)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: ~4 minutes
+- Total execution time: ~4 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| Phase 1 | 1 | ~4 min | ~4 min |
 
 **Recent Trend:**
-- Last 5 plans: —
+- Last 5 plans: 01-01 (4 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -46,6 +46,10 @@ Recent decisions affecting current work:
 - Single vault per system (simplicity — one brain per human, one place to look)
 - BRAIN_PATH env var for vault location (cross-directory access needs a stable reference point)
 - Adaptive mentoring progression deferred to v2 (needs real vault data to tune thresholds safely)
+- jq is a hard dependency; installed to ~/bin on Windows (no admin required) — document in setup guide
+- BRAIN_PATH must be set in both shell profile AND settings.json env block (subshells don't load profiles)
+- Dual-channel errors in brain-path.sh: contextual multi-line stderr for humans, JSON stdout for Claude
+- emit_json exits 0 on invalid JSON (formatting bugs must not break sessions)
 
 ### Pending Todos
 
@@ -60,6 +64,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19
-Stopped at: Roadmap created and STATE.md initialized — no plans created yet
-Resume file: None
+Last session: 2026-03-20
+Stopped at: Completed 01-01 (BRAIN_PATH validation library + settings.json hook registration)
+Resume file: .planning/phases/01-hook-infrastructure/01-02-PLAN.md
