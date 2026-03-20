@@ -13,7 +13,7 @@ Claude Brain Mode transforms the claude-brain-toolkit from a set of manually-inv
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Hook Infrastructure** - Safe, validated hook scaffolding with BRAIN_PATH library, stop-loop guard, exit code discipline, and brain statusline indicator (completed 2026-03-20)
-- [ ] **Phase 2: Session Lifecycle** - Automatic vault context injection at session start, pre-clear capture, and token budget management
+- [x] **Phase 2: Session Lifecycle** - Automatic vault context injection at session start, pre-clear capture, and token budget management (completed 2026-03-20)
 - [ ] **Phase 3: Onboarding + Entry Point** - First-run guided setup and `claude --agent brain-mode` launch path
 - [ ] **Phase 4: Intelligence Layer** - Milestone auto-capture and error pattern recognition on top of a populated vault
 
@@ -46,8 +46,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Brain context library (vault query, token budget, project matching) + SessionStart context injection
-- [ ] 02-02-PLAN.md — Stop/PreCompact capture triggers + end-to-end verification
+- [x] 02-01-PLAN.md — Brain context library (vault query, token budget, project matching) + SessionStart context injection
+- [x] 02-02-PLAN.md — Stop/PreCompact capture triggers + end-to-end verification
 
 ### Phase 3: Onboarding + Entry Point
 **Goal**: Any user can start brain mode from scratch and have a working vault within one guided session
@@ -83,6 +83,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Hook Infrastructure | 2/2 | Complete | 2026-03-20 |
-| 2. Session Lifecycle | 0/2 | Not started | - |
+| 2. Session Lifecycle | 2/2 | Complete | 2026-03-20 |
 | 3. Onboarding + Entry Point | 0/TBD | Not started | - |
 | 4. Intelligence Layer | 0/TBD | Not started | - |
