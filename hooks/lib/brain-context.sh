@@ -420,6 +420,19 @@ is_entry_new_or_changed() {
 # Main entry point. Assembles vault context within token budget.
 # Resets module-level tracking state before building.
 #
+# Because this function is typically called via $() (command substitution) which
+# spawns a subshell, module-level variables set inside cannot propagate back to
+# the parent shell. To work around this, the function writes tracking state to
+# a temp file (_BRAIN_CONTEXT_STATE_FILE). The caller must source that file
+# after the call to restore _PROJECT_COUNT, _PITFALL_COUNT, _GLOBAL_ACTIVE,
+# _NEWEST_MTIME, and _LOADED_FILES in the parent shell.
+#
+# Usage pattern:
+#   _BRAIN_CONTEXT_STATE_FILE=$(mktemp)
+#   VAULT_CONTEXT=$(build_brain_context "$CWD" "$SOURCE")
+#   source "$_BRAIN_CONTEXT_STATE_FILE"
+#   rm -f "$_BRAIN_CONTEXT_STATE_FILE"
+#
 # Args:
 #   $1 — current working directory
 #   $2 — source (startup|resume|clear|compact)
@@ -429,12 +442,12 @@ build_brain_context() {
   local cwd="$1"
   local source="${2:-startup}"
 
-  # Reset module-level tracking
-  _LOADED_FILES=()
-  _PROJECT_COUNT=0
-  _PITFALL_COUNT=0
-  _GLOBAL_ACTIVE=false
-  _NEWEST_MTIME=0
+  # Reset module-level tracking (local copies — written to state file at end)
+  local loaded_files=()
+  local project_count=0
+  local pitfall_count=0
+  local global_active=false
+  local newest_mtime=0
 
   local budget="${BRAIN_TOKEN_BUDGET:-2000}"
   local used_tokens=0
@@ -481,21 +494,21 @@ ${content}"
     used_tokens=$(( used_tokens + entry_tokens ))
 
     # Track metadata
-    _LOADED_FILES+=("$entry")
+    loaded_files+=("$entry")
     local entry_mtime
     entry_mtime=$(get_mtime "$entry")
 
     if _is_global_entry "$entry"; then
-      _GLOBAL_ACTIVE=true
+      global_active=true
     else
-      _PROJECT_COUNT=$(( _PROJECT_COUNT + 1 ))
-      if [ "$entry_mtime" -gt "$_NEWEST_MTIME" ] 2>/dev/null; then
-        _NEWEST_MTIME="$entry_mtime"
+      project_count=$(( project_count + 1 ))
+      if [ "$entry_mtime" -gt "$newest_mtime" ] 2>/dev/null; then
+        newest_mtime="$entry_mtime"
       fi
     fi
 
     if _is_pitfall_entry "$entry"; then
-      _PITFALL_COUNT=$(( _PITFALL_COUNT + 1 ))
+      pitfall_count=$(( pitfall_count + 1 ))
     fi
   done
 
@@ -504,6 +517,23 @@ ${content}"
     assembled="--- .brain.md ---
 ${brain_md_content}
 ${assembled}"
+  fi
+
+  # Write tracking state to state file for parent shell to source
+  if [ -n "${_BRAIN_CONTEXT_STATE_FILE:-}" ]; then
+    {
+      printf '_PROJECT_COUNT=%s\n' "$project_count"
+      printf '_PITFALL_COUNT=%s\n' "$pitfall_count"
+      printf '_GLOBAL_ACTIVE=%s\n' "$global_active"
+      printf '_NEWEST_MTIME=%s\n' "$newest_mtime"
+      # Write loaded files array
+      printf '_LOADED_FILES=(\n'
+      local f
+      for f in "${loaded_files[@]}"; do
+        printf '  %q\n' "$f"
+      done
+      printf ')\n'
+    } > "$_BRAIN_CONTEXT_STATE_FILE"
   fi
 
   printf '%s' "$assembled"
