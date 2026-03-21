@@ -66,13 +66,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STOP-03 | Phase 7 | Complete |
 | STAT-02 | Phase 8 | Complete |
 | STAT-03 | Phase 8 | Complete |
+| MENT-01 | Phase 9 | Pending |
+| MENT-02 | Phase 9 | Pending |
+| ONBR-03 | Phase 10 | Pending |
+| LIFE-06 | Phase 11 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 5 total — all complete
-- v1.2 requirements: 4 total
-- Mapped to phases: 5 (v1.1) + 0 (v1.2, pending roadmap)
-- Unmapped: 4 ⚠️ (v1.2 — awaiting roadmap)
+- v1.2 requirements: 4 total — all mapped
+- Mapped to phases: 5 (v1.1) + 4 (v1.2)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after v1.2 requirements definition*
+*Last updated: 2026-03-21 after v1.2 roadmap creation*

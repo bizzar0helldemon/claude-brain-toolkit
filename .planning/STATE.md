@@ -9,18 +9,18 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 9 — Error Pattern Intelligence
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-21 — Milestone v1.2 started
+Status: Roadmap created, ready to plan Phase 9
+Last activity: 2026-03-21 — v1.2 roadmap created (Phases 9-11)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 0% (v1.2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10 (v1.0)
-- Total phases: 6 (v1.0)
+- Total plans completed: 12 (10 v1.0 + 2 v1.1)
+- Total phases: 8 (6 v1.0 + 2 v1.1)
 - Timeline: 3 days (2026-03-19 -> 2026-03-21)
 
 **By Phase (v1.0):**
@@ -31,7 +31,7 @@ Progress: [░░░░░░░░░░] 0%
 | 5-6 | 1 each | 2 plans | ~3 min |
 
 **Recent Trend:**
-- v1.0 velocity: stable
+- v1.1 velocity: stable
 - Trend: Stable
 
 ## Accumulated Context
@@ -51,6 +51,8 @@ Decisions logged in PROJECT.md Key Decisions table.
 - Phase 8: write_brain_state lives in brain-path.sh shared library (not duplicated per hook)
 - Phase 8: Error state resets to idle on SessionStart — statusline is live indicator, not historical
 - Phase 8: captured written AFTER emit_json in stop.sh (ordering critical per Pitfall 3)
+- v1.2 roadmap: MENT-01 and MENT-02 combined into Phase 9 (counter infrastructure and adaptive behavior are inseparable — shipping split would leave dead code)
+- v1.2 roadmap: Build order MENT-01 → MENT-02 → ONBR-03 → LIFE-06 per research dependency analysis
 
 ### Pending Todos
 
@@ -63,5 +65,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Milestone v1.2 initialized, proceeding to research/requirements
-Resume with: Define requirements and create roadmap
+Stopped at: v1.2 roadmap created — Phases 9, 10, 11 defined
+Resume with: `/gsd:plan-phase 9`
