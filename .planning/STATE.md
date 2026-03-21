@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 4 of 4 (Intelligence Layer) — Complete
-Plan: 2 of 2 in current phase (complete)
-Status: All phases complete — project delivered
-Last activity: 2026-03-21 — Completed 04-02 (error pattern recognition + /brain-add-pattern skill)
+Phase: 5 of 6 (Deploy Phase 4 Artifacts) — In Progress
+Plan: 1 of 1 in current phase (complete)
+Status: Phase 5 complete — Phase 6 (resolve-brain-scan-ref) pending
+Last activity: 2026-03-21 — Completed 05-01 (updated setup.sh to deploy all Phase 4 artifacts)
 
-Progress: [██████████] 100% (Phase 1 complete + Phase 2 complete + Phase 3 complete + Phase 4 complete)
+Progress: [█████████░] 90% (Phase 1 complete + Phase 2 complete + Phase 3 complete + Phase 4 complete + Phase 5 complete)
 
 ## Performance Metrics
 
@@ -33,8 +33,8 @@ Progress: [██████████] 100% (Phase 1 complete + Phase 2 comp
 | Phase 4 | 2 | ~5 min | ~2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (5 min), 03-01 (2 min), 03-02 (3 min), 04-01 (2 min), 04-02 (3 min)
-- Trend: Intelligence layer hooks fast to implement — clear pattern established from Phase 1-3 work
+- Last 5 plans: 03-01 (2 min), 03-02 (3 min), 04-01 (2 min), 04-02 (3 min), 05-01 (2 min)
+- Trend: Targeted installer updates very fast — clear pattern of incremental additions to setup.sh
 
 *Updated after each plan completion*
 
@@ -62,6 +62,8 @@ Recent decisions affecting current work:
 - jq ". as $p" binding required when referencing object fields inside contains() after a pipe — .key evaluates in string context otherwise
 - Write tool (not shell sourcing) for pattern store initialization from skill context — more reliable in agent runtime
 - exit 0 on all PostToolUseFailure paths — hook must never block tool use (Phase 1 exit 1 was an oversight)
+- setup.sh Phase 5b inserted between Phase 5 and Phase 6 for slash commands — maintains ordering without renumbering existing phases
+- Async:true cleanup jq pass placed after merge pass in setup.sh — strips legacy value even when command was already registered
 
 ### Pending Todos
 
@@ -76,5 +78,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Completed 04-02 (error pattern recognition + /brain-add-pattern skill)
-Resume file: N/A — all phases complete. Project delivered.
+Stopped at: Completed 05-01 (setup.sh updated to deploy all Phase 4 artifacts)
+Resume file: .planning/phases/06-resolve-brain-scan-ref/ (Phase 6 pending)
