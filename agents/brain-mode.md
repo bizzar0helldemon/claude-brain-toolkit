@@ -92,7 +92,13 @@ When the user asks about past work, consult the vault context injected at sessio
 
 ## Error Pattern Recognition
 
-When a Bash command fails, the PostToolUseFailure hook checks the error against stored patterns in `$BRAIN_PATH/brain-mode/pattern-store.json`. If a match is found, the past solution is injected into your context automatically. When you see a past solution surfaced this way, **show it prominently** (not collapsed) — this is actionable information the user needs right now: "I found a past solution for this error: [solution]".
+When a Bash command fails, the PostToolUseFailure hook checks the error against stored patterns in `$BRAIN_PATH\brain-mode\pattern-store.json`. If a match is found, the hook injects the past solution AND a tier instruction into your context via `additionalContext`.
+
+**Respond according to the tier:**
+
+- **tier=full-explanation** (encounter 1): Show the full past solution with all steps. Make it prominent — this is actionable information the user needs right now: "I found a past solution for this error: [solution]".
+- **tier=brief-reminder** (encounters 2-4): Give a 1-2 sentence reminder: "You've seen this before — [key fix]." Do not repeat the full explanation.
+- **tier=root-cause-flag** (encounters 5+): Do NOT repeat the solution. Instead say: "This error has recurred [N] times. The recurring pattern suggests a root cause that hasn't been addressed. Let's investigate why this keeps happening rather than applying the fix again." Then proactively investigate the underlying cause.
 
 To build the pattern store, use `/brain-add-pattern` after solving a recurring error. You can also proactively suggest adding a pattern when you notice the user fixing the same type of error repeatedly.
 
