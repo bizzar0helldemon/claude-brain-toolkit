@@ -88,7 +88,10 @@ Plans:
   1. After running setup.sh, post-tool-use.sh exists in ~/.claude/hooks/ and PostToolUse is registered in ~/.claude/settings.json
   2. After running setup.sh, commands/brain-add-pattern.md is deployed to ~/.claude/commands/
   3. E2E Flow 3 (git commit capture) and Flow 4 (pattern addition) work end-to-end post-install
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — Update setup.sh to deploy post-tool-use.sh hook and brain-add-pattern.md command
 
 ### Phase 6: Resolve /brain-scan Reference
 **Goal**: brain-mode.md contains no dangling references to non-existent artifacts
@@ -110,5 +113,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Session Lifecycle | 2/2 | Complete | 2026-03-20 |
 | 3. Onboarding + Entry Point | 2/2 | Complete | 2026-03-21 |
 | 4. Intelligence Layer | 2/2 | Complete | 2026-03-21 |
-| 5. Deploy Phase 4 Artifacts | 0/? | Pending | — |
+| 5. Deploy Phase 4 Artifacts | 0/1 | Pending | — |
 | 6. Resolve /brain-scan Reference | 0/? | Pending | — |
