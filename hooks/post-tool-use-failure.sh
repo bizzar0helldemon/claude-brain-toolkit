@@ -40,12 +40,42 @@ MATCH=$(jq -r \
   "$PATTERN_STORE" 2>/dev/null | head -1)
 
 if [ -n "$MATCH" ]; then
-  # Increment encounter count for matched pattern
+  # Increment encounter count for matched pattern (must run first — read-after-write)
   update_encounter_count "$PATTERN_STORE" "$ERROR_MSG"
 
-  # Build response with past solution injected into context
-  CONTEXT_MSG="Past solution found for this error:\n\n$MATCH"
-  emit_json "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUseFailure\",\"additionalContext\":\"$CONTEXT_MSG\"}}"
+  # Read back updated encounter count
+  COUNT=$(jq -r \
+    --arg err "$ERROR_MSG" \
+    '.patterns[] | . as $p | select(($err | ascii_downcase) | contains($p.key | ascii_downcase)) | .encounter_count' \
+    "$PATTERN_STORE" 2>/dev/null | head -1)
+
+  # Numeric guard — prevents bash errors on empty or non-numeric COUNT
+  COUNT="${COUNT:-0}"
+  if ! printf '%s' "$COUNT" | grep -qE '^[0-9]+$'; then
+    COUNT=0
+  fi
+
+  # Calculate tier based on encounter count
+  if [ "$COUNT" -ge 5 ]; then
+    TIER="root-cause-flag"
+    TIER_NOTE="[Encounter $COUNT — investigate root cause, do not repeat the solution]"
+  elif [ "$COUNT" -ge 2 ]; then
+    TIER="brief-reminder"
+    TIER_NOTE="[Encounter $COUNT — give a 1-2 sentence reminder only]"
+  else
+    TIER="full-explanation"
+    TIER_NOTE="[Encounter $COUNT — give full explanation with steps]"
+  fi
+
+  # Build context message and JSON safely via jq --arg (no string interpolation of solution text)
+  CONTEXT_MSG=$(printf "Past solution found [encounter_count=%s tier=%s]:\n\n%s\n\n%s" \
+    "$COUNT" "$TIER" "$MATCH" "$TIER_NOTE")
+
+  OUTPUT=$(jq -n \
+    --arg ctx "$CONTEXT_MSG" \
+    '{"hookSpecificOutput":{"hookEventName":"PostToolUseFailure","additionalContext":$ctx}}')
+
+  emit_json "$OUTPUT"
   exit 0
 fi
 
