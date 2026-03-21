@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 4 of 4 (Intelligence Layer) — In progress
-Plan: 1 of 2 in current phase (complete)
-Status: In progress — 04-01 complete, 04-02 remaining
-Last activity: 2026-03-21 — Completed 04-01 (PostToolUse git commit detection hook)
+Phase: 4 of 4 (Intelligence Layer) — Complete
+Plan: 2 of 2 in current phase (complete)
+Status: All phases complete — project delivered
+Last activity: 2026-03-21 — Completed 04-02 (error pattern recognition + /brain-add-pattern skill)
 
-Progress: [█████████░] 87% (Phase 1 complete + Phase 2 complete + Phase 3 complete + Phase 4 Plan 1 complete)
+Progress: [██████████] 100% (Phase 1 complete + Phase 2 complete + Phase 3 complete + Phase 4 complete)
 
 ## Performance Metrics
 
@@ -30,10 +30,10 @@ Progress: [█████████░] 87% (Phase 1 complete + Phase 2 compl
 | Phase 1 | 2 | ~7 min | ~3.5 min |
 | Phase 2 | 2 | ~20 min | ~10 min |
 | Phase 3 | 2 | ~5 min | ~2.5 min |
-| Phase 4 | 1 (of 2) | ~2 min | ~2 min |
+| Phase 4 | 2 | ~5 min | ~2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (15 min), 02-02 (5 min), 03-01 (2 min), 03-02 (3 min), 04-01 (2 min)
+- Last 5 plans: 02-02 (5 min), 03-01 (2 min), 03-02 (3 min), 04-01 (2 min), 04-02 (3 min)
 - Trend: Intelligence layer hooks fast to implement — clear pattern established from Phase 1-3 work
 
 *Updated after each plan completion*
@@ -59,6 +59,9 @@ Recent decisions affecting current work:
 - PreCompact uses additionalContext (not decision:block) — compaction cannot be blocked, instruction is advisory
 - PostToolUse hook uses decision:block (synchronous, no async:true) — filtering done in-script, no matcher field
 - async:true removed from PostToolUseFailure proactively for Plan 02 compatibility (additionalContext requires sync)
+- jq ". as $p" binding required when referencing object fields inside contains() after a pipe — .key evaluates in string context otherwise
+- Write tool (not shell sourcing) for pattern store initialization from skill context — more reliable in agent runtime
+- exit 0 on all PostToolUseFailure paths — hook must never block tool use (Phase 1 exit 1 was an oversight)
 
 ### Pending Todos
 
@@ -73,5 +76,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Completed 04-01 (PostToolUse git commit detection hook)
-Resume file: .planning/phases/04-intelligence-layer/04-02-PLAN.md
+Stopped at: Completed 04-02 (error pattern recognition + /brain-add-pattern skill)
+Resume file: N/A — all phases complete. Project delivered.
