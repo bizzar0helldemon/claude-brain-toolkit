@@ -1,416 +1,442 @@
-# Architecture Research
+# Architecture Patterns
 
-**Domain:** Claude Code CLI extension — brain mode with hooks, skills, statusline, and persistent local knowledge
-**Researched:** 2026-03-19
-**Confidence:** HIGH (sourced from official Claude Code documentation)
+**Domain:** Claude Brain Mode v1.2 — idle detection, vault relocate, pattern encounter tracking
+**Researched:** 2026-03-21
+**Confidence:** HIGH (sourced from codebase direct inspection + existing architectural decisions)
 
-## Standard Architecture
+---
 
-### System Overview
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                  Claude Code CLI Session                          │
-│                                                                    │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐   │
-│  │  StatusLine  │  │   Hooks     │  │       Skills            │   │
-│  │  Script      │  │   Engine    │  │  (brain-* commands)     │   │
-│  │ (statusline  │  │             │  │  ~/.claude/skills/      │   │
-│  │  .sh/.py)    │  │ settings.   │  │  brain-mode/            │   │
-│  └──────┬───────┘  │ json hooks  │  │  brain-capture/         │   │
-│         │          └──────┬──────┘  │  brain-audit/           │   │
-│         │                 │         │  daily-note/             │   │
-│  ┌──────▼───────┐  ┌──────▼──────┐  └───────────┬─────────────┘   │
-│  │  Session JSON │  │  Shell      │              │                  │
-│  │  stdin feed   │  │  Scripts    │              │                  │
-│  │  (per msg)    │  │  (.claude/  │              │                  │
-│  └───────────────┘  │  hooks/)    │              │                  │
-│                     └─────────────┘              │                  │
-└──────────────────────────────────────────────────┼─────────────────┘
-                                                   │ BRAIN_PATH env var
-                                       ┌───────────▼──────────────────┐
-                                       │   Vault / Brain at BRAIN_PATH │
-                                       │                               │
-                                       │  daily_notes/   prompts/      │
-                                       │  projects/      intake/        │
-                                       │  pattern-store.json           │
-                                       │  (encounter frequency DB)     │
-                                       └───────────────────────────────┘
-```
-
-### Component Responsibilities
-
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| StatusLine Script | Render brain emoji + color state, display context %, session cost | Shell or Python script at `~/.claude/statusline.sh`; reads JSON from stdin |
-| Hooks Engine | Fire shell scripts at session lifecycle events (SessionStart, Stop, PostToolUse, PreCompact, etc.) | JSON config in `~/.claude/settings.json` `hooks` block; scripts in `~/.claude/hooks/` |
-| Brain Mode Skill | Orchestrate brain mode activation — inject vault context, configure session behavior | `~/.claude/skills/brain-mode/SKILL.md` with `disable-model-invocation: true` |
-| Capture Hooks | Auto-capture session output to vault before /clear (PreCompact) and on Stop | Shell scripts triggered by `PreCompact` + `Stop` hook events |
-| Skill Orchestration Layer | Invoke existing brain-* skills (brain-audit, brain-capture, daily-note) automatically from hooks | Hook scripts that call `/skill-name` via Claude's Skill tool, or shell scripts that write directly to vault |
-| Pattern Store | Track encounter frequency for adaptive mentoring; JSON file in vault | `BRAIN_PATH/brain-mode/pattern-store.json`; read/written by hook scripts |
-| Vault I/O Layer | Read/write to BRAIN_PATH regardless of project cwd | All shell scripts reference `$BRAIN_PATH` env var; set once in `~/.claude/settings.json` or shell profile |
-
-## Recommended Project Structure
+## System Overview (v1.1 Baseline + v1.2 Additions)
 
 ```
-~/.claude/
-├── settings.json              # hooks config, statusLine config, BRAIN_PATH env
-├── statusline.sh              # brain statusline script
+Claude Code CLI Session
+├── settings.json — hook registration, BRAIN_PATH env, statusLine command
 │
-├── skills/
-│   ├── brain-mode/            # Master orchestration skill
-│   │   ├── SKILL.md           # Activated via /brain-mode or claude --brain alias
-│   │   ├── onboarding.md      # First-run guided setup content
-│   │   └── patterns-ref.md    # Adaptive mentoring pattern definitions
-│   │
-│   ├── brain-capture/         # (existing) prompt pattern extraction
-│   │   └── SKILL.md
-│   │
-│   ├── brain-audit/           # (existing) vault health check
-│   │   └── SKILL.md
-│   │
-│   └── daily-note/            # (existing) journal entry logging
-│       └── SKILL.md
-│
-└── hooks/
-    ├── session-start.sh        # Load vault context on session start
-    ├── pre-compact.sh          # Auto-capture before /clear compaction
-    ├── stop.sh                 # Milestone capture on session stop
-    ├── error-detect.sh         # PostToolUseFailure → pattern log
-    └── lib/
-        ├── brain-path.sh       # Shared: resolve + validate $BRAIN_PATH
-        ├── pattern-store.sh    # Read/write encounter frequency
-        └── vault-write.sh      # Atomic append to vault files
+├── statusline.sh ─────────────────────────────────────────────────────┐
+│     reads: .brain-state (idle | captured | error)                    │
+│     reads: stdin JSON (model, context %)                             │
+│     [v1.2: no changes needed]                                        │
+│                                                                       │
+├── hooks/                                                              │
+│   ├── session-start.sh ─── fires: SessionStart                       │
+│   │     calls: brain_path_validate, build_brain_context              │
+│   │     writes: .brain-state ("idle"), .brain-session-state.json     │
+│   │     emits: additionalContext JSON                                 │
+│   │     [v1.2: no changes needed]                                    │
+│   │                                                                   │
+│   ├── stop.sh ─────────────── fires: Stop                            │
+│   │     reads: transcript_path (JSONL)                               │
+│   │     writes: .brain-state ("captured" | "idle")                   │
+│   │     emits: decision:block when capture warranted                 │
+│   │     [v1.2: no changes needed]                                    │
+│   │                                                                   │
+│   ├── pre-compact.sh ───── fires: PreCompact                         │
+│   │     emits: additionalContext (capture instruction)               │
+│   │     [v1.2: no changes needed]                                    │
+│   │                                                                   │
+│   ├── post-tool-use.sh ── fires: PostToolUse                         │
+│   │     watches: git commit commands                                  │
+│   │     emits: decision:block to trigger /brain-capture              │
+│   │     [v1.2: no changes needed]                                    │
+│   │                                                                   │
+│   ├── post-tool-use-failure.sh ── fires: PostToolUseFailure          │
+│   │     reads: pattern-store.json (match error against keys)         │
+│   │     writes: pattern-store.json (update_encounter_count)          │
+│   │     emits: additionalContext with past solution (if match found) │
+│   │     [v1.2: encounter_count already written — MENT-01 complete]   │
+│   │                                                                   │
+│   └── lib/
+│       ├── brain-path.sh ── provides: brain_path_validate,           │
+│       │     brain_log_error, emit_json, write_brain_state,           │
+│       │     init_pattern_store, update_encounter_count               │
+│       │     [v1.2: no changes needed for MENT-01]                    │
+│       │     [v1.2: add vault_relocate helper for ONBR-03]            │
+│       │                                                               │
+│       └── brain-context.sh ── provides: build_brain_context,        │
+│             collect_vault_entries, get_project_name,                 │
+│             write_session_state, build_summary_block                 │
+│             [v1.2: no changes needed]                                │
+│                                                                       │
+├── agents/brain-mode.md ─── agent definition                          │
+│     [v1.2: update Available Skills to list new commands]             │
+│                                                                       │
+└── commands/ ─────────────────────────────────────────────────────────┘
+    ├── brain/brain-add-pattern.md
+    └── brain/brain-relocate.md  [v1.2: NEW — ONBR-03]
 
-$BRAIN_PATH/                   # User's vault (cross-directory target)
+global-skills/
+├── brain-capture/SKILL.md
+├── brain-audit/SKILL.md
+└── daily-note/SKILL.md
+
+onboarding-kit/skills/
+└── brain-setup/SKILL.md
+
+$BRAIN_PATH/
+├── .brain-state           — "idle | captured | error TIMESTAMP"
+├── .brain-errors.log      — timestamped event log
+├── .brain-session-state.json — loaded files + mtimes (delta detection)
 └── brain-mode/
-    ├── pattern-store.json      # Encounter frequency tracking
-    ├── session-log.md          # Auto-captured session summaries
-    └── onboarding-state.json   # First-run completion flags
+    └── pattern-store.json — patterns[] with encounter_count, last_seen
 ```
 
-### Structure Rationale
+---
 
-- **hooks/ with lib/ subdirectory:** Hooks fire frequently; shared helpers (brain-path.sh, vault-write.sh) prevent duplication and ensure consistent `$BRAIN_PATH` resolution across all hook scripts.
-- **brain-mode/ skill directory:** This is the "entry point" skill. All session configuration (context injection, mentoring behavior config) lives here so it can be updated without touching hooks.
-- **pattern-store.json in vault:** Lives at `$BRAIN_PATH/brain-mode/` so it persists across machines (if vault is synced) and survives Claude Code updates. JSON rather than SQLite because shell scripts can read/write it without dependencies.
-- **statusline.sh separate from hooks:** Statusline and hooks are independent subsystems. Statusline reads session JSON from stdin on every message; hooks fire at discrete lifecycle events. They do not share state at runtime — statusline reads pattern-store.json directly from disk if it needs mentoring state color.
+## Component Responsibilities
+
+| Component | Current Responsibility | v1.2 Changes |
+|-----------|----------------------|--------------|
+| `post-tool-use-failure.sh` | Match errors, surface past solutions, increment encounter_count | None — encounter_count already written by `update_encounter_count` |
+| `lib/brain-path.sh` | BRAIN_PATH validation, state writes, JSON emit, pattern store ops | Add `vault_relocate` helper function for ONBR-03 |
+| `agents/brain-mode.md` | Agent definition, session behavior, available skills | Add `/brain-relocate` to Available Skills list |
+| `commands/brain/brain-relocate.md` | (new) | New slash command: vault relocate wizard |
+| `brain-mode.md` agent behavior | Idle-aware behavior guidance | Add LIFE-06 idle detection behavior instructions |
+
+---
+
+## v1.2 Feature Analysis — What Each Requires
+
+### MENT-01: Pattern Encounter Tracking
+
+**Status: ALREADY IMPLEMENTED.**
+
+Inspection of `post-tool-use-failure.sh` (lines 43-44) and `lib/brain-path.sh` (lines 178-213) confirms:
+- `update_encounter_count` is called on every matched pattern
+- It increments `encounter_count` and sets `last_seen` atomically via jq + tmp+mv
+- `pattern-store.json` schema already has `encounter_count` and `last_seen` per pattern
+
+**What is NOT implemented:** Reading and acting on encounter_count (MENT-02 progressive responses). MENT-01 the data collection piece is done. MENT-02 the behavior change piece is deferred.
+
+**New components needed:** None.
+**Modified components:** None. This is a documentation/verification task.
+
+---
+
+### MENT-02: Progressive Responses Based on Encounter Count
+
+**Status: NOT STARTED. Data is available (MENT-01), behavior change is not wired.**
+
+The encounter_count field exists in pattern-store.json for every matched pattern. To make behavior change:
+
+**Where behavior change belongs:** In `agents/brain-mode.md`. The agent already reads injected context at SessionStart. The pattern store is loaded as part of vault context if it matches the project. The agent needs instructions on how to interpret encounter_count and modify its response style.
+
+**Two approaches:**
+
+1. **Agent-side only (low complexity):** Add instructions to brain-mode.md: "When PostToolUseFailure surfaces a past solution via additionalContext, check if `encounter_count` is present. If count >= 3, respond more directly without preamble ('I've seen this before — [solution]'). If count >= 5, proactively suggest /brain-add-pattern or root cause investigation."
+
+2. **Hook-side enrichment (medium complexity):** Modify `post-tool-use-failure.sh` to include encounter_count in the additionalContext it emits (currently only emits the solution text). Agent then has the count available in context without reading the pattern store file.
+
+**Recommendation:** Approach 2 (hook-side enrichment) because the agent currently only receives the solution string, not the count. Enriching the hook output is a minimal change that unlocks the agent to respond progressively.
+
+**Modified components:**
+- `post-tool-use-failure.sh` — include encounter_count in additionalContext JSON
+- `agents/brain-mode.md` — add progressive response instructions
+
+---
+
+### ONBR-03: Vault Relocate Command
+
+**Status: NOT STARTED.**
+
+**What it needs to do:**
+1. Accept a new vault path from the user
+2. Validate the new path exists (or offer to create it)
+3. Copy or move vault contents from old BRAIN_PATH to new path
+4. Update BRAIN_PATH in `~/.claude/settings.json` (the env block)
+5. Advise user to update their shell profile manually (cannot be done programmatically)
+6. Verify the relocated vault is accessible
+
+**Architecture fit:** This is a slash command (skill), not a hook. It requires Claude to orchestrate file operations (Read, Write, Bash) and it requires a conversation with the user to confirm the new path.
+
+**Key constraint:** `~/.claude/settings.json` can be read and written by the Bash tool within a Claude session. The vault relocate command uses jq to update `settings.json`'s `env.BRAIN_PATH` field.
+
+**Shell profile limitation:** Claude cannot write to `~/.bashrc` or `~/.zshrc` reliably across platforms. The command should remind the user to update their shell profile manually and provide the exact export line.
+
+**Data flow for vault relocate:**
+```
+user: /brain-relocate /new/vault/path
+    |
+    v
+brain-relocate.md skill
+    |-- read current BRAIN_PATH (from env or prompt user)
+    |-- validate new path (exists? if not, offer mkdir -p)
+    |-- confirm: "Move vault from X to Y?"
+    |-- cp -r "$OLD_PATH" "$NEW_PATH" (or mv with warning)
+    |-- update ~/.claude/settings.json env.BRAIN_PATH via jq
+    |-- print: "Update your shell profile: export BRAIN_PATH=/new/path"
+    |-- write_brain_state "idle" at new path (verify write works)
+    |-- confirm success
+```
+
+**New components:**
+- `commands/brain/brain-relocate.md` — slash command skill
+- `onboarding-kit/skills/brain-relocate/SKILL.md` — installer-deployable copy
+
+**Modified components:**
+- `onboarding-kit/setup.sh` — deploy brain-relocate command
+- `agents/brain-mode.md` — add `/brain-relocate` to Available Skills
+
+---
+
+### LIFE-06: Idle Detection
+
+**Status: NOT STARTED. Explicitly deferred in v1.1 due to intrusiveness concerns.**
+
+**The intrusiveness problem (from project decisions):** Stop hook previously fired on every session including empty scoping sessions. The v1.1 fix was smart threshold detection (HAS_FILE_CHANGES || HAS_GIT_COMMIT). Idle detection that fires proactively on user pauses carries the same intrusiveness risk — must be opt-in or threshold-gated.
+
+**What idle detection could mean:**
+- Offer to capture/summarize after N minutes of user inactivity within a session
+- Detect context window approaching limit and proactively suggest capture
+
+**Claude Code hook constraint:** There is no `Idle` or `Timeout` hook event in Claude Code. The available hook events are: SessionStart, Stop, PreToolUse, PostToolUse, PostToolUseFailure, PreCompact. None fire based on time elapsed.
+
+**Feasible approaches given hook constraints:**
+
+1. **Agent-side only (viable):** Add instructions to brain-mode.md: "If the user appears to have paused (session has substantial tool use but user asks an open-ended question unrelated to recent work), proactively offer to capture: 'We've done a fair amount of work — want to run /brain-capture before continuing?'" This is behavioral guidance, not a hook.
+
+2. **PostToolUse context-window monitor (viable):** `post-tool-use.sh` already fires on every tool use. It receives `context_window.used_percentage` via stdin JSON. When context usage exceeds a threshold (e.g., 70%), emit an additionalContext advisory suggesting capture. This is not idle detection per se, but addresses the same "don't lose work" concern.
+
+3. **External cron/timer (not viable):** A background process that watches for Claude inactivity would require OS-level process management outside Claude Code's model. Out of scope.
+
+**Recommendation:** Implement approach 1 (agent behavior instructions) for the subjective "user paused" case and approach 2 (context window threshold) for the objective "approaching limit" case. Both are low-risk, additive changes.
+
+**New components:**
+- None (approach 1: agent instructions only, approach 2: post-tool-use.sh minor modification)
+
+**Modified components:**
+- `agents/brain-mode.md` — idle awareness behavioral instructions
+- `hooks/post-tool-use.sh` — optional context window threshold check
+
+---
+
+## Recommended Project Structure (Changes Only)
+
+Changes relative to v1.1 deployed structure at `~/.claude/`:
+
+```
+# NEW files
+commands/brain/brain-relocate.md        [ONBR-03 slash command]
+
+# MODIFIED files
+agents/brain-mode.md                     [LIFE-06 behavior, MENT-02 instructions,
+                                          ONBR-03 skill listing]
+hooks/post-tool-use-failure.sh           [MENT-02 encounter_count in additionalContext]
+hooks/post-tool-use.sh                   [LIFE-06 optional: context window threshold]
+
+# Source repo additions
+commands/brain-relocate.md               [source for deployment]
+onboarding-kit/skills/brain-relocate/   [installer-deployable skill]
+onboarding-kit/setup.sh                  [deploy brain-relocate command]
+```
+
+No new lib/ functions are required for MENT-01/MENT-02 or LIFE-06. `vault_relocate` logic belongs in the skill itself (uses Claude's file tools), not in a shell lib function.
+
+---
 
 ## Architectural Patterns
 
-### Pattern 1: Environment Variable as Cross-Directory Bridge
+### Pattern 1: Agent Instructions as Behavior Layer (LIFE-06, MENT-02)
 
-**What:** All vault I/O uses `$BRAIN_PATH` rather than relative paths. The variable is set in the user's shell profile and inherited by every Claude Code session and hook subprocess.
+**What:** For features that require contextual judgment (when has the user paused? how should response tone change?), encode the behavior as instructions in `agents/brain-mode.md` rather than as shell logic.
 
-**When to use:** Any time a hook script, statusline script, or skill needs to read from or write to the vault. This is the single mechanism that makes brain mode work cross-directory.
+**Why:** Shell hooks are binary interceptors — they fire on fixed events with fixed logic. Nuanced, contextual behavior ("respond more directly when encounter_count >= 3") belongs in the agent instructions where Claude can reason about context. Hooks provide the data (encounter_count in additionalContext, context window percentage); the agent decides what to do with it.
 
-**Trade-offs:** Simple and reliable. Requires user to set `$BRAIN_PATH` once (handled by onboarding). Fails silently if not set — hooks must validate and surface a clear error.
+**Constraint:** Agent instructions only affect brain-mode sessions (claude --agent brain-mode). They have no effect on other sessions or on hook behavior.
 
-**Example:**
-```bash
-#!/bin/bash
-# lib/brain-path.sh — sourced by all hook scripts
-if [ -z "$BRAIN_PATH" ]; then
-  echo "BRAIN_PATH not set. Run /brain-mode to complete setup." >&2
-  exit 1
-fi
-if [ ! -d "$BRAIN_PATH" ]; then
-  echo "BRAIN_PATH directory not found: $BRAIN_PATH" >&2
-  exit 1
-fi
+### Pattern 2: Hook Enrichment for Downstream Agent Use (MENT-02)
+
+**What:** When a hook has data the agent needs to reason with, include that data in the additionalContext output, not just the human-readable text.
+
+**Current gap:** `post-tool-use-failure.sh` emits `"Past solution found for this error:\n\n$MATCH"` but does not include encounter_count. Agent cannot vary its response without knowing the count.
+
+**Fix:** Emit structured context:
 ```
-
-### Pattern 2: Session JSON Stdin for StatusLine State
-
-**What:** The statusline script receives a JSON blob from Claude Code on every assistant message. The script reads session metadata (context %, cost, model, session_id) and renders the brain emoji + color state. Additional state (mentoring level, vault health) is read from files on disk.
-
-**When to use:** Any information that must appear in the statusline. Color state transitions (green/yellow/red) are driven by combining session JSON data with on-disk pattern-store state.
-
-**Trade-offs:** Statusline runs on every message — keep it fast. Cache slow disk reads (pattern-store.json) to `/tmp/brain-statusline-cache` with a 5-second TTL as the official docs recommend for slow git operations.
-
-**Example:**
-```bash
-#!/bin/bash
-input=$(cat)
-PCT=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
-SESSION_ID=$(echo "$input" | jq -r '.session_id')
-
-# Read mentoring level from disk (cached)
-CACHE="/tmp/brain-mode-state-${SESSION_ID}"
-if [ ! -f "$CACHE" ] || [ $(($(date +%s) - $(stat -c %Y "$CACHE" 2>/dev/null || echo 0))) -gt 5 ]; then
-  MENTOR_LEVEL=$(jq -r '.current_level // "warn"' "$BRAIN_PATH/brain-mode/pattern-store.json" 2>/dev/null || echo "warn")
-  echo "$MENTOR_LEVEL" > "$CACHE"
-fi
-MENTOR_LEVEL=$(cat "$CACHE")
-
-# Color logic
-case "$MENTOR_LEVEL" in
-  warn)   COLOR='\033[33m' ;;   # yellow — will warn
-  silent) COLOR='\033[32m' ;;   # green — silently fixing
-  invest) COLOR='\033[31m' ;;   # red — investigating root cause
-  *)      COLOR='\033[0m'  ;;
-esac
-RESET='\033[0m'
-
-echo -e "${COLOR}🧠${RESET} ctx:${PCT}%"
+Past solution found (seen N times): [solution text]
 ```
+Or as JSON in the hookSpecificOutput additionalContext field. The agent can read either form.
 
-### Pattern 3: Hook Scripts as Lifecycle Interceptors
+### Pattern 3: Slash Command for User-Driven Vault Management (ONBR-03)
 
-**What:** Shell scripts wired to `SessionStart`, `Stop`, `PreCompact`, and `PostToolUseFailure` events handle automatic vault operations. Each script is self-contained, receives event JSON on stdin, and writes to the vault.
+**What:** Operations that involve irreversible or potentially destructive file operations (moving the vault) belong in slash commands (skills), not in hooks. Hooks are automatic and cannot pause for confirmation. Skills run inside the agent session where Claude can ask for confirmation, show diffs, and handle errors gracefully.
 
-**When to use:** Any behavior that must happen automatically without user invocation — auto-capture before clear, session milestone logging, error pattern tracking.
+**Why this matters for vault relocate:** Moving a vault incorrectly could destroy data. The slash command pattern lets Claude confirm with the user, validate paths, handle partial failures, and provide a recoverable path if something goes wrong.
 
-**Trade-offs:** Hooks run in a subprocess and have no access to Claude's conversation context directly. To capture conversation content, hooks must read `transcript_path` from the event JSON — Claude Code passes the path to the session's `.jsonl` transcript file in every hook invocation.
+### Pattern 4: Atomic Write for Pattern Store Updates (Existing — Confirmed)
 
-**Example:**
-```bash
-#!/bin/bash
-# hooks/pre-compact.sh — fires before /clear (PreCompact event)
-source ~/.claude/hooks/lib/brain-path.sh
-
-INPUT=$(cat)
-TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path')
-SESSION_ID=$(echo "$INPUT" | jq -r '.session_id')
-DATE=$(date +%Y-%m-%d)
-TIME=$(date +%H:%M)
-
-# Extract last N lines of conversation for capture
-SUMMARY=$(tail -c 4096 "$TRANSCRIPT" 2>/dev/null | \
-  jq -r 'select(.role=="assistant") | .content[0].text' 2>/dev/null | \
-  tail -1)
-
-# Append to session log
-cat >> "$BRAIN_PATH/brain-mode/session-log.md" <<EOF
-
-## $DATE $TIME — Pre-clear capture (session $SESSION_ID)
-
-$SUMMARY
+Already implemented in `update_encounter_count` in `lib/brain-path.sh`. The tmp+mv write pattern prevents corruption when hooks fire in rapid succession. This pattern must be preserved when extending the pattern store schema.
 
 ---
-EOF
-exit 0
-```
 
-### Pattern 4: Pattern Store as Adaptive Mentoring State Machine
+## Data Flow (New Flows for v1.2)
 
-**What:** A JSON file in the vault tracks how many times each error/pattern type has been encountered in the current session and historically. Hook scripts update this store; the statusline and brain-mode skill read it to determine current mentoring level.
-
-**When to use:** Frequency-driven behavior. The adaptive mentoring system (warn once → silent fix → investigate root cause) is state that must persist across messages within a session.
-
-**Trade-offs:** JSON file is simple and shell-scriptable but not atomic under concurrent writes. Since hooks run sequentially per event and Claude Code is single-session, true concurrency is not a concern. Use atomic write pattern (write to temp, mv) to prevent corruption.
-
-**Example:**
-```json
-{
-  "session_id": "abc123",
-  "current_level": "warn",
-  "patterns": {
-    "missing-brain-path": { "count": 0, "first_seen": null },
-    "vault-write-error": { "count": 0, "first_seen": null },
-    "broken-wiki-link": { "count": 2, "first_seen": "2026-03-19" }
-  },
-  "thresholds": {
-    "warn_to_silent": 2,
-    "silent_to_investigate": 5
-  }
-}
-```
-
-## Data Flow
-
-### SessionStart Flow
+### MENT-02: Progressive Response Flow
 
 ```
-claude starts (any cwd)
+Bash tool fails
     |
     v
-SessionStart hook fires
+post-tool-use-failure.sh fires
     |
     v
-session-start.sh reads $BRAIN_PATH
-    |-- validate vault exists
-    |-- read pattern-store.json (get mentoring level)
-    |-- check first-run flag (onboarding-state.json)
-    |-- if first-run: output onboarding prompt to stdout (injected as context)
-    |-- else: output vault summary as context (recent daily note, active projects)
-    v
-Claude sees injected context in session
+match error against pattern-store.json
+    |-- if match: get solution AND encounter_count
     |
     v
-StatusLine renders brain emoji + color from session JSON + cached disk state
+emit additionalContext with enriched message:
+  "Past solution found (seen N times): [solution]"
+    |
+    v
+brain-mode agent receives context in next turn
+    |-- if N == 1: standard "I found a past solution: [solution]"
+    |-- if N >= 3: more direct "This is the [N]th time — [solution]"
+    |-- if N >= 5: add suggestion to investigate root cause
 ```
 
-### Pre-Clear (Auto-Capture) Flow
+### ONBR-03: Vault Relocate Flow
 
 ```
-user types /clear
+user: /brain-relocate
     |
     v
-PreCompact hook fires
+brain-relocate.md skill activates
     |
     v
-pre-compact.sh reads transcript_path from event JSON
-    |-- parse recent assistant messages from .jsonl transcript
-    |-- format as capture entry
-    |-- append to $BRAIN_PATH/brain-mode/session-log.md
-    |-- optionally update pattern-store.json if patterns detected
-    v
-/clear proceeds normally
+Claude: "What is the new vault path?"
     |
     v
-context window cleared; vault retains captured content
+user provides new path
+    |
+    v
+Claude validates:
+  - does new path exist? (Read tool attempt or Bash ls)
+  - if not: "Create it?" → mkdir -p
+    |
+    v
+Claude confirms: "Move vault from $OLD to $NEW?"
+    |
+    v
+user confirms
+    |
+    v
+Claude executes:
+  cp -r "$BRAIN_PATH" "$NEW_PATH"   (copy, not move — safer)
+  jq update ~/.claude/settings.json env.BRAIN_PATH
+    |
+    v
+Claude advises:
+  "Add to your shell profile: export BRAIN_PATH=$NEW_PATH"
+  "Then run: source ~/.zshrc (or ~/.bashrc)"
+    |
+    v
+Claude verifies:
+  write_brain_state "idle" at new path (via Bash call)
+  confirm .brain-state exists at new path
 ```
 
-### Error Detection / Adaptive Mentoring Flow
+### LIFE-06: Context Window Threshold Flow (approach 2)
 
 ```
-Claude executes a tool (Bash, Write, Edit, etc.)
-    |
-    v (if tool fails)
-PostToolUseFailure hook fires
+Claude executes any tool (PostToolUse fires)
     |
     v
-error-detect.sh reads tool name + error from event JSON
-    |-- classify error type (known pattern?)
-    |-- increment count in pattern-store.json (atomic write)
-    |-- compare count against thresholds
-    |-- if threshold crossed: update current_level in pattern-store.json
+post-tool-use.sh reads stdin JSON
+    |
     v
-StatusLine reads updated pattern-store.json on next message
-    |-- color changes reflect new mentoring level
-    v
-brain-mode skill (already in context) reads level from vault on next invocation
-    |-- adjusts behavior: warn / silent-fix / investigate
+check context_window.used_percentage
+    |-- if < 70%: exit 0 (no action, as today)
+    |-- if >= 70% AND no prior threshold advisory in session:
+        emit additionalContext:
+          "Context window at N% — consider /brain-capture if this session
+           has capturable work before the window fills."
+        write threshold-notified flag to avoid repeat advisories
 ```
 
-### Cross-Directory Vault Write Flow
+**Flag mechanism for deduplication:** Write a temp file `/tmp/brain-context-warned-$SESSION_ID` on first advisory. Check for it on subsequent calls. Session ID is available in hook input JSON.
 
-```
-Hook or skill runs (cwd = any project directory)
-    |
-    v
-Script sources lib/brain-path.sh
-    |-- validates $BRAIN_PATH is set and exists
-    v
-Script constructs absolute path: $BRAIN_PATH/[subpath]/[file].md
-    |
-    v
-Atomic write: write to $BRAIN_PATH/[subpath]/[file].tmp, then mv to final
-    |
-    v
-Vault file updated regardless of current project directory
-```
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| Single user, 1 vault | Current design — JSON pattern store, shell scripts, single settings.json |
-| Power user with large vault | Add vault-size guard to statusline cache; defer brain-audit to explicit invocation only; index the pattern store |
-| Multi-machine (shared vault via sync) | pattern-store.json may have write conflicts across machines — add machine-id prefix to session keys; session-log.md append-only so sync conflicts are safe |
-| Team (multiple users) | Promote to plugin structure with `${CLAUDE_PLUGIN_DATA}` for per-user state; vault becomes shared read-only reference; pattern-store per user in plugin data dir |
-
-### Scaling Priorities
-
-1. **First bottleneck:** Statusline script latency. Statusline fires on every assistant message. If it runs slow git commands or reads large vault files synchronously, the UI lags. Fix: cache all disk reads with a 5-second TTL in `/tmp`.
-2. **Second bottleneck:** Hook script startup time. Shell process spawning adds 20-50ms per hook. Fix: keep hook scripts thin — do minimal work and defer anything non-critical (like brain-audit) to async hooks (`async: true` in hook config).
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Hardcoding Vault Path in Scripts
-
-**What people do:** Write `~/brain/` or `/Users/srco1/brain/` directly in hook scripts and SKILL.md content.
-
-**Why it's wrong:** The vault path varies per user. When the user changes their vault location or a second machine has a different path, every script breaks. The whole system relies on `$BRAIN_PATH` as the single source of truth.
-
-**Do this instead:** Always reference `$BRAIN_PATH` environment variable. Validate it at script start via `lib/brain-path.sh`. Keep `{{SET_YOUR_BRAIN_PATH}}` as the placeholder in SKILL.md content — it gets substituted by the user's CLAUDE.md, not hardcoded.
-
-### Anti-Pattern 2: Using context: fork for Brain Mode Skill
-
-**What people do:** Add `context: fork` to brain-mode/SKILL.md to isolate it in a subagent.
-
-**Why it's wrong:** Brain mode is designed to run inline — it injects persistent context and behavioral guidelines into the main session. Running it in a forked subagent means it operates in isolation with no access to the conversation history or ongoing context. The subagent finishes, returns a result, and the brain mode instructions disappear.
-
-**Do this instead:** Brain mode skill runs inline (no `context: fork`). Skills that do discrete vault operations (brain-capture, brain-audit) can use `context: fork` with an `Explore` agent since they are bounded tasks that read/write files. The orchestrating brain-mode skill stays in main context.
-
-### Anti-Pattern 3: Writing Vault State to Claude's Session Memory Instead of Disk
-
-**What people do:** Ask Claude to "remember" pattern counts or mentoring state within the conversation.
-
-**Why it's wrong:** Session memory is ephemeral. It resets on /clear. It is not accessible to hooks or the statusline script, which are separate processes. State that must survive /clear and be read by multiple components (hooks, statusline, skills) must live in files at `$BRAIN_PATH`.
-
-**Do this instead:** Pattern store, session state, and onboarding flags are JSON files in `$BRAIN_PATH/brain-mode/`. Scripts read and write them directly. Claude's session only loads summaries of this state as injected context at SessionStart.
-
-### Anti-Pattern 4: One Monolithic Hook Script
-
-**What people do:** Create a single hook script that handles all events with if/else branches.
-
-**Why it's wrong:** Claude Code calls hooks by event type. A single script mapped to multiple events grows complex and hard to debug. If it crashes on one event type, it silently breaks others. The `async: true` flag applies per-hook, so a monolithic script cannot be made async for some events but not others.
-
-**Do this instead:** One script per event type (`session-start.sh`, `pre-compact.sh`, `stop.sh`, `error-detect.sh`). Share code via sourced library scripts in `hooks/lib/`. Each script has a single responsibility and can have its own `async`, `timeout`, and `statusMessage` configuration.
-
-### Anti-Pattern 5: Blocking the Session with Slow Hooks
-
-**What people do:** Run brain-audit (which reads every vault file) synchronously in a SessionStart hook.
-
-**Why it's wrong:** SessionStart fires before Claude responds to the user. A slow hook delays the entire session startup. Brain-audit scans potentially hundreds of vault files — this can take seconds.
-
-**Do this instead:** SessionStart hook only does cheap operations: validate `$BRAIN_PATH`, inject brief context (last daily note summary). Mark expensive operations (`async: true`) so they run in background without blocking. Expose brain-audit as a manual `/brain-audit` command the user triggers explicitly.
+---
 
 ## Integration Points
 
-### External Services
+### New Integration: brain-relocate.md slash command
 
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| Obsidian vault (filesystem) | Direct file read/write via `$BRAIN_PATH` | No Obsidian API needed; vault is just a directory of markdown files |
-| BRAIN_PATH env var | Set in shell profile, inherited by all Claude Code subprocesses | Must be set before launching Claude; hooks validate its presence |
-| Claude Code transcript API | `transcript_path` field in hook event JSON points to `.jsonl` file | Read-only access to conversation history from hooks |
+| Reads | Writes |
+|-------|--------|
+| `~/.claude/settings.json` (current BRAIN_PATH) | `~/.claude/settings.json` (updated BRAIN_PATH) |
+| `$BRAIN_PATH` directory listing | `$NEW_PATH` (vault copy) |
+| | `.brain-state` at new path (verification write) |
 
-### Internal Boundaries
+### Modified Integration: post-tool-use-failure.sh → brain-mode agent
 
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| StatusLine ↔ Pattern Store | Statusline reads `$BRAIN_PATH/brain-mode/pattern-store.json` from disk (cached) | Unidirectional read; statusline never writes to pattern store |
-| Hook Scripts ↔ Pattern Store | Hooks read and write `$BRAIN_PATH/brain-mode/pattern-store.json` | Use atomic write (write tmp, mv) to prevent corruption |
-| brain-mode Skill ↔ Pattern Store | Skill reads pattern store at invocation time for mentoring level | Claude reads the file via Read tool; skill instructions tell it how to interpret the data |
-| Hook Scripts ↔ Vault Files | Append-only writes to `session-log.md`, `daily_notes/` | Never delete or overwrite; always append with timestamp header |
-| Hook Scripts ↔ brain-* Skills | Hooks cannot directly invoke skills; skills are invoked by Claude | If a hook needs skill behavior, it writes context to vault and the brain-mode skill picks it up on next user turn |
-| Session JSON ↔ StatusLine | Claude Code pipes JSON to statusline script stdin on every message | Read-only for statusline; statusline cannot write back to session state |
+| Before | After |
+|--------|-------|
+| Emits: `"Past solution found for this error:\n\n$MATCH"` | Emits: `"Past solution found (seen N times):\n\n$MATCH"` |
+| Agent sees: solution text only | Agent sees: solution text + frequency signal |
 
-## Suggested Build Order
+### Modified Integration: post-tool-use.sh → brain-mode agent (LIFE-06 approach 2)
 
-Based on component dependencies, build in this sequence:
+| Before | After |
+|--------|-------|
+| Only fires on git commit detection | Also checks context_window.used_percentage |
+| Exit 0 for non-commit tools | Emits advisory when >= 70% threshold (once per session) |
 
-1. **Vault I/O Foundation** — `lib/brain-path.sh`, `lib/vault-write.sh`. Everything else depends on these. Validate `$BRAIN_PATH` resolution works cross-directory before building anything else.
+---
 
-2. **StatusLine Script** — `~/.claude/statusline.sh`. The simplest component; only reads session JSON and a cached disk file. Build this early so brain mode has visible feedback from day one. Start with just the brain emoji + context percentage. Color states can come later once pattern-store exists.
+## Build Order for v1.2 (Dependency-Ordered)
 
-3. **Pattern Store Schema** — Define and create `$BRAIN_PATH/brain-mode/pattern-store.json` with initial structure. Block hooks and adaptive mentoring depend on this contract.
+Dependencies flow left to right: items on the right depend on items on the left.
 
-4. **SessionStart Hook** — `hooks/session-start.sh` wired to `SessionStart` event. Validates `$BRAIN_PATH`, injects vault context. This is the "brain mode activation" hook that makes every session brain-aware.
+```
+MENT-01 verification   (no code change — confirm existing behavior works)
+    |
+    v
+MENT-02 hook enrichment → MENT-02 agent instructions
+    (post-tool-use-failure.sh)   (agents/brain-mode.md)
 
-5. **PreCompact Hook** — `hooks/pre-compact.sh` wired to `PreCompact` event. Auto-capture before /clear. Depends on vault-write.sh and transcript_path access.
+ONBR-03 command → ONBR-03 setup.sh → ONBR-03 agent listing
+    (commands/brain-relocate.md)   (setup.sh)   (brain-mode.md)
 
-6. **Stop Hook** — `hooks/stop.sh` wired to `Stop` event. Session milestone capture. Similar to pre-compact but fires on session end.
+LIFE-06 agent instructions  [independent — no hook required for approach 1]
+    (agents/brain-mode.md)
+LIFE-06 hook threshold      [optional enhancement, independent of above]
+    (post-tool-use.sh)
+```
 
-7. **Error Detection Hook** — `hooks/error-detect.sh` wired to `PostToolUseFailure`. Updates pattern-store.json. Enables statusline color changes.
+**Recommended phase order:**
 
-8. **brain-mode Skill** — `skills/brain-mode/SKILL.md`. Now that hooks and pattern store exist, the skill can reference them. Encodes adaptive mentoring behavior as Claude instructions.
+1. **MENT-01 verification** — Zero-code phase. Inspect pattern-store.json after a real error match, confirm encounter_count increments. If it does not, fix update_encounter_count before proceeding. This unblocks MENT-02.
 
-9. **Adaptive Mentoring Logic** — Update statusline color states to reflect pattern-store levels. Update brain-mode SKILL.md to encode warn/silent/investigate tiers.
+2. **MENT-02** — Hook enrichment (post-tool-use-failure.sh: add count to message) + agent instructions (brain-mode.md: progressive response tiers). Small, contained, testable.
 
-10. **First-Run Onboarding** — `onboarding-state.json` check in SessionStart hook; onboarding content in `skills/brain-mode/onboarding.md`. Build last — depends on all other components being proven stable.
+3. **ONBR-03** — New slash command. Most complex (file ops, settings.json surgery, user confirmation flow). Isolated — no other v1.2 feature depends on it. Build last among the code features so MENT-02 is stable first.
+
+4. **LIFE-06** — Agent instructions only (low risk, low effort). Context window threshold check in post-tool-use.sh is optional and can be a separate plan if desired.
+
+---
+
+## What is NOT Needed for v1.2
+
+- **No new hook event types** — all three features fit within existing hook events (PostToolUse, PostToolUseFailure) or are agent-only
+- **No new lib/ shell functions** — vault_relocate is agent-orchestrated (uses Claude's file tools), not a shell function
+- **No settings.json hook additions** — all existing hooks remain unchanged in registration
+- **No new data files** — pattern-store.json schema already supports MENT-01/MENT-02; no new JSON schema needed
+- **No statusline changes** — v1.1 statusline states (idle/captured/error) are sufficient for v1.2 features
+
+---
 
 ## Sources
 
-- [Claude Code Hooks Reference](https://code.claude.com/docs/en/hooks) — HIGH confidence. Official documentation. All hook events, input JSON schema, exit codes, output format.
-- [Claude Code Skills Reference](https://code.claude.com/docs/en/skills) — HIGH confidence. Official documentation. SKILL.md frontmatter, context injection, subagent execution, string substitutions including `${CLAUDE_SESSION_ID}`.
-- [Claude Code StatusLine Reference](https://code.claude.com/docs/en/statusline) — HIGH confidence. Official documentation. Full JSON schema piped to statusline stdin, update frequency, ANSI color support, caching pattern.
-- [Claude Code Plugins Reference](https://code.claude.com/docs/en/plugins-reference) — HIGH confidence. Official documentation. Plugin directory structure, `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`, hook config in plugins.
-- Existing brain toolkit skills (brain-capture, brain-audit, daily-note) — directly read from codebase. Established patterns for `$ARGUMENTS`, `{{SET_YOUR_BRAIN_PATH}}` substitution, and vault I/O conventions.
+- `hooks/post-tool-use-failure.sh` — direct code inspection, confirms encounter_count write is already implemented
+- `hooks/lib/brain-path.sh` lines 178-213 — `update_encounter_count` function, confirms atomic write pattern
+- `hooks/stop.sh` — direct code inspection, confirms transcript_path + context_window parsing patterns
+- `hooks/post-tool-use.sh` — direct code inspection, confirms stdin JSON parsing for context_window threshold approach
+- `agents/brain-mode.md` — direct code inspection, confirms agent instruction pattern for behavioral guidance
+- `.planning/PROJECT.md` — requirements LIFE-06, ONBR-03, MENT-01, MENT-02 definitions and rationale
+- `.planning/STATE.md` — key decisions, especially intrusiveness lessons from v1.1
+- `.planning/REQUIREMENTS.md` — explicit deferred status of LIFE-06, ONBR-03, MENT-01, MENT-02
+- Claude Code hook events (HIGH confidence from prior research): SessionStart, Stop, PreCompact, PostToolUse, PostToolUseFailure are the complete set — no Idle/Timer event exists
 
 ---
-*Architecture research for: Claude Brain Mode — Claude Code CLI extension with hooks, skills, statusline, and persistent local knowledge*
-*Researched: 2026-03-19*
+
+*Architecture research for: Claude Brain Mode v1.2 — idle detection, vault relocate, pattern encounter tracking*
+*Researched: 2026-03-21*
+*Supersedes: prior ARCHITECTURE.md sections on v1.0 build order and component responsibilities*
