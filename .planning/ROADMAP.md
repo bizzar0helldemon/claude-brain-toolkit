@@ -74,10 +74,10 @@ Plans:
   3. The hook exits 0 (non-blocking) when no capturable content is detected, and exits 2 (blocking) only when capture is warranted
   4. The detection logic checks for concrete signals: tool calls made, files changed, commits present, error resolutions attempted
 
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 07-01: TBD
+- [ ] 07-01-PLAN.md — Add transcript signal detection to stop.sh
 
 #### Phase 8: Statusline States
 **Goal**: The statusline passively communicates brain activity at a glance without requiring any user action
@@ -106,5 +106,5 @@ Plans:
 | 4. Intelligence Layer | v1.0 | 2/2 | Complete | 2026-03-21 |
 | 5. Deploy Phase 4 Artifacts | v1.0 | 1/1 | Complete | 2026-03-21 |
 | 6. Resolve /brain-scan Reference | v1.0 | 1/1 | Complete | 2026-03-21 |
-| 7. Smart Stop Hook | v1.1 | 0/TBD | Not started | - |
+| 7. Smart Stop Hook | v1.1 | 0/1 | Not started | - |
 | 8. Statusline States | v1.1 | 0/TBD | Not started | - |
