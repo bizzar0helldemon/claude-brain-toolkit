@@ -1,4 +1,5 @@
 {
+  "agent": "brain-mode",
   "env": {
     "BRAIN_PATH": ""
   },
