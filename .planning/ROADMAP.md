@@ -89,10 +89,10 @@ Plans:
   3. Statusline shows 🔴🧠 when a hook error or degraded state is detected
   4. State transitions happen automatically as hook outcomes change — no user command needed
 
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — Add state file writes to hooks + state-aware statusline display
 
 ## Progress
 
@@ -107,4 +107,4 @@ Plans:
 | 5. Deploy Phase 4 Artifacts | v1.0 | 1/1 | Complete | 2026-03-21 |
 | 6. Resolve /brain-scan Reference | v1.0 | 1/1 | Complete | 2026-03-21 |
 | 7. Smart Stop Hook | v1.1 | 1/1 | Complete | 2026-03-21 |
-| 8. Statusline States | v1.1 | 0/TBD | Not started | - |
+| 8. Statusline States | v1.1 | 0/1 | Not started | - |
