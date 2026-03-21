@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** The brain compounds over time — every session makes future sessions smarter by actively capturing and applying knowledge without the user having to ask.
-**Current focus:** Phase 4 — Intelligence Layer (in progress)
+**Current focus:** v1.0 complete — all phases done
 
 ## Current Position
 
-Phase: 5 of 6 (Deploy Phase 4 Artifacts) — In Progress
+Phase: 6 of 6 (Resolve Brain-Scan Ref) — Complete
 Plan: 1 of 1 in current phase (complete)
-Status: Phase 5 complete — Phase 6 (resolve-brain-scan-ref) pending
-Last activity: 2026-03-21 — Completed 05-01 (updated setup.sh to deploy all Phase 4 artifacts)
+Status: ALL PHASES COMPLETE — v1.0 milestone reached
+Last activity: 2026-03-21 — Completed 06-01 (removed dangling /brain-scan references from brain-mode.md)
 
-Progress: [█████████░] 90% (Phase 1 complete + Phase 2 complete + Phase 3 complete + Phase 4 complete + Phase 5 complete)
+Progress: [██████████] 100% (Phase 1 complete + Phase 2 complete + Phase 3 complete + Phase 4 complete + Phase 5 complete + Phase 6 complete)
 
 ## Performance Metrics
 
@@ -64,6 +64,8 @@ Recent decisions affecting current work:
 - exit 0 on all PostToolUseFailure paths — hook must never block tool use (Phase 1 exit 1 was an oversight)
 - setup.sh Phase 5b inserted between Phase 5 and Phase 6 for slash commands — maintains ordering without renumbering existing phases
 - Async:true cleanup jq pass placed after merge pass in setup.sh — strips legacy value even when command was already registered
+- /brain-scan is a standalone toolkit skill, not a brain-mode artifact — brain-mode.md Available Skills must only list skills deployed by setup.sh
+- Empty-vault guidance points to /brain-capture (the correct first-session action), not /brain-scan
 
 ### Pending Todos
 
@@ -78,5 +80,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Completed 05-01 (setup.sh updated to deploy all Phase 4 artifacts)
-Resume file: .planning/phases/06-resolve-brain-scan-ref/ (Phase 6 pending)
+Stopped at: Completed 06-01 (brain-mode.md cleaned — v1.0 milestone complete)
+Resume file: N/A — all phases complete
