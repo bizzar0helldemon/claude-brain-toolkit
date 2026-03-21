@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 7 of 8 in v1.1 (Smart Stop Hook)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-21 — v1.1 roadmap created, phases 7-8 defined
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-03-21 — Completed 07-01-PLAN.md (signal detection in stop.sh)
 
-Progress: [████████░░] 75% (v1.0 complete, v1.1 not started)
+Progress: [█████████░] 87% (v1.0 complete, Phase 7 complete, Phase 8 remaining)
 
 ## Performance Metrics
 
@@ -43,6 +43,9 @@ Decisions logged in PROJECT.md Key Decisions table.
 - v1.0: Stop hook uses decision:block (guaranteed capture before session end)
 - v1.1: Fix intrusiveness before adding features — stop hook fired 4x on empty scoping session
 - v1.1: Smart detection needed — check for tool usage, code changes, commits, error resolutions
+- Phase 7: TOOL_COUNT > 0 is sufficient threshold for v1.1 — any tool use = non-trivial work
+- Phase 7: Error resolution captured implicitly via TOOL_COUNT > 0 — no separate signal needed
+- Phase 7: Missing transcript_path defaults to trivial (no block) — conservative in correct direction
 
 ### Pending Todos
 
@@ -55,5 +58,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: v1.1 roadmap written, ready to plan Phase 7
-Resume with: `/gsd:plan-phase 7`
+Stopped at: Phase 7 complete — 07-01-PLAN.md executed, signal detection in stop.sh
+Resume with: `/gsd:plan-phase 8`
