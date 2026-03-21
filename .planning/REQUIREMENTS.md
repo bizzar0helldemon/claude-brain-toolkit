@@ -18,22 +18,30 @@ Requirements for v1.1 Quiet Brain. Each maps to roadmap phases.
 - [x] **STAT-02**: Statusline shows distinct visual states — idle (🧠), active/captured (🟢🧠), error/degraded (🔴🧠)
 - [x] **STAT-03**: State transitions happen automatically based on hook activity (no user action needed)
 
-## Future Requirements
+## v1.2 Requirements
 
-Deferred beyond v1.1. Tracked but not in current roadmap.
+Requirements for v1.2 Polish & Intelligence. Each maps to roadmap phases.
 
-### Idle Detection
+### Intelligence Layer
 
-- **LIFE-06**: Idle detection offers to summarize or capture current state when user pauses — deferred, fix intrusiveness first
+- [ ] **MENT-01**: Pattern store encounter_count is verified incrementing on each error match and pattern store has soft-cap pruning
+- [ ] **MENT-02**: Error pattern responses adapt based on encounter count — full explanation at first encounter, brief note at 2-4, root cause investigation flag at 5+
 
 ### Vault Management
 
-- **ONBR-03**: Vault relocate command updates BRAIN_PATH if vault directory moves — utility, not UX-critical
+- [ ] **ONBR-03**: User can relocate their vault via `/brain-relocate`, which updates BRAIN_PATH in both settings.json and shell profile with post-relocate verification
 
-### Adaptive Mentoring
+### Session Intelligence
 
-- **MENT-01**: Pattern encounter tracking records frequency per pattern/pitfall — needs real usage data
-- **MENT-02**: Progressive response changes behavior based on encounter count — same intrusiveness risk
+- [ ] **LIFE-06**: Idle detection offers to capture when the session has capturable content and the user is idle, with a one-offer-per-session guard
+
+## Future Requirements
+
+Deferred beyond v1.2. Tracked but not in current roadmap.
+
+### Adaptive Mentoring (Extended)
+
+- **MENT-03**: Full adaptive mentoring — auto-fix + root cause investigation based on tuned thresholds from real usage data
 
 ## Out of Scope
 
@@ -60,10 +68,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STAT-03 | Phase 8 | Complete |
 
 **Coverage:**
-- v1.1 requirements: 5 total
-- Mapped to phases: 5
-- Unmapped: 0 ✓
+- v1.1 requirements: 5 total — all complete
+- v1.2 requirements: 4 total
+- Mapped to phases: 5 (v1.1) + 0 (v1.2, pending roadmap)
+- Unmapped: 4 ⚠️ (v1.2 — awaiting roadmap)
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after roadmap creation*
+*Last updated: 2026-03-21 after v1.2 requirements definition*
