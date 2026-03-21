@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** The brain compounds over time — every session makes future sessions smarter by actively capturing and applying knowledge without the user having to ask.
-**Current focus:** v1.1 Quiet Brain — complete
+**Current focus:** v1.2 Polish & Intelligence
 
 ## Current Position
 
-Phase: 8 of 8 in v1.1 (Statusline States)
-Plan: 1 of 1 in current phase
-Status: Phase complete — v1.1 complete
-Last activity: 2026-03-21 — Completed 08-01-PLAN.md (statusline states via .brain-state file)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-21 — Milestone v1.2 started
 
-Progress: [██████████] 100% (v1.0 complete, Phase 7 complete, Phase 8 complete)
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -63,5 +63,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Phase 8 complete — 08-01-PLAN.md executed, statusline states via .brain-state file
-Resume with: v1.1 complete — no further phases planned
+Stopped at: Milestone v1.2 initialized, proceeding to research/requirements
+Resume with: Define requirements and create roadmap

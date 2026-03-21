@@ -27,15 +27,15 @@ The brain compounds over time — every session makes future sessions smarter by
 
 ### Active
 
-- [ ] STOP-01: Smart stop hook — detect whether session produced capturable content before triggering capture
-- [ ] STAT-02: Color-coded brain states in statusline (idle vs active processing)
+- [ ] LIFE-06: Idle detection offers to summarize or capture current state when user pauses
+- [ ] ONBR-03: Vault relocate command updates BRAIN_PATH if vault directory moves
+- [ ] MENT-01: Pattern encounter tracking records frequency per pattern/pitfall
+- [ ] MENT-02: Progressive response changes behavior based on encounter count
 
-### Future
+### Validated (v1.1)
 
-- [ ] LIFE-06: Idle detection offers to summarize or capture current state when user pauses — deferred, fix intrusiveness first
-- [ ] ONBR-03: Vault relocate command updates BRAIN_PATH if vault directory moves — utility, not UX-critical
-- [ ] MENT-01: Pattern encounter tracking records frequency per pattern/pitfall — needs real usage data
-- [ ] MENT-02: Progressive response changes behavior based on encounter count — same intrusiveness risk
+- ✓ STOP-01: Smart stop hook — detect whether session produced capturable content before triggering capture — v1.1
+- ✓ STAT-02: Color-coded brain states in statusline (idle vs active processing) — v1.1
 
 ### Out of Scope
 
@@ -44,13 +44,15 @@ The brain compounds over time — every session makes future sessions smarter by
 - Non-Claude-Code integrations — specifically for Claude Code CLI
 - Mobile/web interface — CLI-only tool
 
-## Current Milestone: v1.1 Quiet Brain
+## Current Milestone: v1.2 Polish & Intelligence
 
-**Goal:** Reduce brain mode intrusiveness — make it helpful without being annoying.
+**Goal:** Make the brain smarter and more self-managing — idle awareness, vault portability, and adaptive pattern behavior.
 
 **Target features:**
-- Smart stop hook that only triggers capture when the session produced something worth capturing
-- Color-coded statusline states that passively show brain activity without interrupting
+- Idle detection that offers to summarize or capture when the user pauses
+- Vault relocate command to move the vault and update BRAIN_PATH
+- Pattern encounter tracking that records frequency per pattern/pitfall
+- Progressive responses that change behavior based on encounter count
 
 ## Context
 
@@ -83,7 +85,7 @@ Initial deployment covers 5 lifecycle hooks, 1 agent definition, 1 onboarding sk
 | PostToolUse/Failure hooks synchronous | Filtering done in-script, no async race conditions | ✓ Good |
 | /brain-scan is toolkit skill, not brain-mode artifact | Available Skills must only list deployed skills | ✓ Good — clear boundary |
 
-| Fix intrusiveness before adding features | Stop hook firing 4x on empty sessions proved proactive features need intelligence before expansion | — Pending |
+| Fix intrusiveness before adding features | Stop hook firing 4x on empty sessions proved proactive features need intelligence before expansion | ✓ Good — v1.1 solved it |
 
 ---
-*Last updated: 2026-03-21 after v1.1 milestone started*
+*Last updated: 2026-03-21 after v1.2 milestone started*
