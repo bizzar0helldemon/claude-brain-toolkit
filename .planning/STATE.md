@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** The brain compounds over time — every session makes future sessions smarter by actively capturing and applying knowledge without the user having to ask.
-**Current focus:** Phase 4 — Intelligence Layer (next up)
+**Current focus:** Phase 4 — Intelligence Layer (in progress)
 
 ## Current Position
 
-Phase: 3 of 4 (Onboarding + Entry Point) — Complete
-Plan: 2 of 2 in current phase (complete)
-Status: Phase 3 complete — ready for Phase 4 planning
-Last activity: 2026-03-21 — Completed 03-02 (setup.sh installer + deployment verification)
+Phase: 4 of 4 (Intelligence Layer) — In progress
+Plan: 1 of 2 in current phase (complete)
+Status: In progress — 04-01 complete, 04-02 remaining
+Last activity: 2026-03-21 — Completed 04-01 (PostToolUse git commit detection hook)
 
-Progress: [████████░░] 75% (Phase 1 complete + Phase 2 complete + Phase 3 complete)
+Progress: [█████████░] 87% (Phase 1 complete + Phase 2 complete + Phase 3 complete + Phase 4 Plan 1 complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: ~7 minutes
-- Total execution time: ~27 minutes
+- Total plans completed: 5
+- Average duration: ~6 minutes
+- Total execution time: ~29 minutes
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [████████░░] 75% (Phase 1 complete + Phase 2 compl
 | Phase 1 | 2 | ~7 min | ~3.5 min |
 | Phase 2 | 2 | ~20 min | ~10 min |
 | Phase 3 | 2 | ~5 min | ~2.5 min |
+| Phase 4 | 1 (of 2) | ~2 min | ~2 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (3 min), 02-01 (15 min), 02-02 (5 min), 03-01 (2 min), 03-02 (3 min)
-- Trend: 02-01 longer due to subshell bug discovery and fix; Phase 3 fast (both plans under 3 min each)
+- Last 5 plans: 02-01 (15 min), 02-02 (5 min), 03-01 (2 min), 03-02 (3 min), 04-01 (2 min)
+- Trend: Intelligence layer hooks fast to implement — clear pattern established from Phase 1-3 work
 
 *Updated after each plan completion*
 
@@ -56,6 +57,8 @@ Recent decisions affecting current work:
 - Pitfall count in summary includes only project-specific pitfall entries, not global ones
 - Stop hook uses decision:block (not additionalContext) so capture is guaranteed before session ends
 - PreCompact uses additionalContext (not decision:block) — compaction cannot be blocked, instruction is advisory
+- PostToolUse hook uses decision:block (synchronous, no async:true) — filtering done in-script, no matcher field
+- async:true removed from PostToolUseFailure proactively for Plan 02 compatibility (additionalContext requires sync)
 
 ### Pending Todos
 
@@ -70,5 +73,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Completed 03-02 (setup.sh installer + deployment verification) — Phase 3 complete
-Resume file: .planning/phases/04-intelligence-layer/ (run /gsd:research-phase for Phase 4 before planning)
+Stopped at: Completed 04-01 (PostToolUse git commit detection hook)
+Resume file: .planning/phases/04-intelligence-layer/04-02-PLAN.md
