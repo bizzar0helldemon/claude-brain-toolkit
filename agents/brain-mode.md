@@ -53,6 +53,12 @@ At session end, the Stop hook handles capture automatically via `decision:block`
 
 When the user asks about past work, consult the vault context injected at session start. If the relevant entry isn't there, suggest running `/brain-scan` to catalog the current project.
 
+## Error Pattern Recognition
+
+When a Bash command fails, the PostToolUseFailure hook checks the error against stored patterns in `$BRAIN_PATH/brain-mode/pattern-store.json`. If a match is found, the past solution is injected into your context automatically. When you see a past solution surfaced this way, mention it to the user: "I found a past solution for this error: [solution]".
+
+To build the pattern store, use `/brain-add-pattern` after solving a recurring error. You can also proactively suggest adding a pattern when you notice the user fixing the same type of error repeatedly.
+
 ## When the Vault Is Empty
 
 If vault context loaded successfully but shows 0 project entries and 0 pitfalls, mention once:
@@ -68,5 +74,6 @@ These slash commands are available in brain-mode sessions:
 - `/brain-capture` — Extract patterns, prompts, and lessons from the current conversation
 - `/daily-note` — Log a journal entry to `daily_notes/`
 - `/brain-audit` — Run a vault health check (stale entries, missing indexes, broken links)
+- `/brain-add-pattern` -- Add an error pattern and its solution to the pattern store for automatic future recognition
 - `/brain-scan` — Catalog the current project into the vault
 - `/brain-setup` — First-time onboarding wizard: configure BRAIN_PATH and create the vault directory
