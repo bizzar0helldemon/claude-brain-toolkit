@@ -208,6 +208,63 @@ update_encounter_count() {
   if ! mv "$tmp_file" "$store_path" 2>/dev/null; then
     rm -f "$tmp_file" 2>/dev/null
     brain_log_error "PatternStore" "atomic write failed for store at $store_path"
+    return 0
+  fi
+
+  prune_pattern_store "$store_path"
+
+  return 0
+}
+
+# ------------------------------------------------------------------------------
+# prune_pattern_store <store_path> [cap]
+#
+# Removes the least-used patterns when the store exceeds the cap (default 50).
+# Keeps the top-cap patterns by encounter_count (descending). Writes atomically.
+# Never crashes the calling hook — always returns 0.
+#
+# Args:
+#   $1 — absolute path to pattern-store.json
+#   $2 — (optional) max pattern count, default 50
+#
+# Return codes: 0 always
+# ------------------------------------------------------------------------------
+prune_pattern_store() {
+  local store_path="$1"
+  local cap="${2:-50}"
+
+  # Guard: store must exist
+  if [ ! -f "$store_path" ]; then
+    return 0
+  fi
+
+  # Check current count — skip if at or under cap
+  local count
+  count=$(jq '.patterns | length' "$store_path" 2>/dev/null)
+  if [ -z "$count" ] || [ "$count" -le "$cap" ]; then
+    return 0
+  fi
+
+  local now
+  now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  local tmp_file
+  tmp_file="${store_path}.tmp.$$"
+
+  if ! jq \
+    --argjson cap "$cap" \
+    --arg now "$now" \
+    '.updated = $now |
+     .patterns = (.patterns | sort_by(.encounter_count) | reverse | .[:$cap])' \
+    "$store_path" > "$tmp_file" 2>/dev/null; then
+    rm -f "$tmp_file" 2>/dev/null
+    brain_log_error "PatternStore" "prune jq failed for store at $store_path"
+    return 0
+  fi
+
+  if ! mv "$tmp_file" "$store_path" 2>/dev/null; then
+    rm -f "$tmp_file" 2>/dev/null
+    brain_log_error "PatternStore" "prune atomic write failed for store at $store_path"
   fi
 
   return 0
