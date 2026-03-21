@@ -57,10 +57,11 @@ Plans:
   1. A user with no BRAIN_PATH set runs `claude --agent brain-mode` and is guided step-by-step to create a vault directory and set the env var — no manual documentation needed
   2. After onboarding completes, running `claude --agent brain-mode` in any project directory loads brain mode with vault context from BRAIN_PATH
   3. A user whose vault directory has moved can re-run onboarding and the new path is picked up by all subsequent hooks without editing config files manually
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md — brain-mode.md agent definition + brain-setup onboarding wizard skill
+- [ ] 03-02-PLAN.md — setup.sh installer rewrite + project settings.json agent default + deployment verification
 
 ### Phase 4: Intelligence Layer
 **Goal**: Brain mode actively captures knowledge at meaningful moments and surfaces past error solutions without the user invoking any commands
@@ -84,5 +85,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Hook Infrastructure | 2/2 | Complete | 2026-03-20 |
 | 2. Session Lifecycle | 2/2 | Complete | 2026-03-20 |
-| 3. Onboarding + Entry Point | 0/TBD | Not started | - |
+| 3. Onboarding + Entry Point | 0/2 | Not started | - |
 | 4. Intelligence Layer | 0/TBD | Not started | - |
