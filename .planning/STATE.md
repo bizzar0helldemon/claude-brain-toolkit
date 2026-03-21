@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 2 of 4 (Session Lifecycle) — COMPLETE
-Plan: 2 of 2 in current phase (complete)
-Status: Phase 2 complete — ready for Phase 3
-Last activity: 2026-03-20 — Completed 02-02 (Stop/PreCompact capture triggers + end-to-end verification)
+Phase: 3 of 4 (Onboarding + Entry Point) — In progress
+Plan: 1 of 2 in current phase (complete)
+Status: In progress — 03-01 complete, 03-02 next (deploy + entry point)
+Last activity: 2026-03-21 — Completed 03-01 (brain-mode subagent + brain-setup skill)
 
-Progress: [█████░░░░░] 50% (Phase 1 complete + Phase 2 complete)
+Progress: [██████░░░░] 60% (Phase 1 complete + Phase 2 complete + Phase 3 Plan 1 complete)
 
 ## Performance Metrics
 
@@ -29,9 +29,10 @@ Progress: [█████░░░░░] 50% (Phase 1 complete + Phase 2 compl
 |-------|-------|-------|----------|
 | Phase 1 | 2 | ~7 min | ~3.5 min |
 | Phase 2 | 2 | ~20 min | ~10 min |
+| Phase 3 | 1 (so far) | ~2 min | ~2 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4 min), 01-02 (3 min), 02-01 (15 min), 02-02 (5 min)
+- Last 5 plans: 01-01 (4 min), 01-02 (3 min), 02-01 (15 min), 02-02 (5 min), 03-01 (2 min)
 - Trend: 02-01 longer due to subshell bug discovery and fix; 02-02 fast (implementation was straightforward)
 
 *Updated after each plan completion*
@@ -65,10 +66,10 @@ None yet.
 - Phase 4 planning needs research: adaptive mentoring thresholds and error pattern classification approach are not yet designed — run `/gsd:research-phase` before detailed planning of Phase 4
 - Phase 3 onboarding UX needs concrete design before planning: two distinct cases (BRAIN_PATH unset vs set but vault empty) need different flows
 - Windows Git Bash compatibility: `stat` flags differ between macOS and Linux/Git Bash — `lib/brain-path.sh` must detect OS and branch accordingly
-- Verify at Phase 3: whether `skills` frontmatter field in `agents/brain-mode.md` preloads existing brain-* skills at session start (live test required)
+- Verify post-Phase 3: whether `skills` frontmatter field in `agents/brain-mode.md` preloads existing brain-* skills at session start (live test required — field intentionally omitted in 03-01 until confirmed)
 
 ## Session Continuity
 
-Last session: 2026-03-20
-Stopped at: Completed 02-02 (Stop/PreCompact capture triggers) — Phase 2 complete
-Resume file: .planning/phases/03-onboarding/ (Phase 3 — needs planning before execution)
+Last session: 2026-03-21
+Stopped at: Completed 03-01 (brain-mode subagent + brain-setup skill)
+Resume file: .planning/phases/03-onboarding-entry-point/03-02-PLAN.md
