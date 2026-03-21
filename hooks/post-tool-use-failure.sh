@@ -13,6 +13,7 @@ COMMAND=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_input.command // ""')
 
 # Log tool failure for post-mortem debugging
 brain_log_error "ToolFailure:$TOOL_NAME" "$ERROR_MSG"
+write_brain_state "error"
 
 # Pattern matching against stored error patterns
 PATTERN_STORE="${BRAIN_PATH}/brain-mode/pattern-store.json"

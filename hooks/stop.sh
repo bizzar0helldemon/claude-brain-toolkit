@@ -53,19 +53,22 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
 fi
 
 # Determine if session has capturable content
+# Threshold: actual code changes or commits — not just tool usage (reads, agents, etc.)
 SHOULD_CAPTURE=false
-if [ "$TOOL_COUNT" -gt 0 ] || [ "$HAS_GIT_COMMIT" -gt 0 ] || [ "$HAS_FILE_CHANGES" -gt 0 ]; then
+if [ "$HAS_FILE_CHANGES" -gt 0 ] || [ "$HAS_GIT_COMMIT" -gt 0 ]; then
   SHOULD_CAPTURE=true
 fi
 
 if [ "$SHOULD_CAPTURE" = "false" ]; then
   # Trivial session — silent skip, no output
+  write_brain_state "idle"
   exit 0
 fi
 
 brain_log_error "Stop" "Capture trigger fired (tools: $TOOL_COUNT, commits: $HAS_GIT_COMMIT, files: $HAS_FILE_CHANGES)"
 
-REASON="Before ending this session, please run /brain-capture to preserve any useful patterns from this conversation, then run /daily-note to log a session summary. After completing both, briefly confirm what was captured (e.g., 'Brain captured: N learnings, daily note updated') and then you can stop."
+REASON="Before ending this session, please run /brain-capture to preserve any useful patterns from this conversation, then briefly confirm what was captured (e.g., 'Brain captured: N learnings') and then you can stop."
 BLOCK_JSON=$(jq -n --arg reason "$REASON" '{"decision":"block","reason":$reason}')
 emit_json "$BLOCK_JSON"
+write_brain_state "captured"
 exit 0

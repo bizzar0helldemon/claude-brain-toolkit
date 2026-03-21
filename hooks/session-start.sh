@@ -7,6 +7,9 @@ if ! brain_path_validate; then
   exit 1
 fi
 
+# Reset state to idle — new session starts clean, stale prior state discarded
+write_brain_state "idle"
+
 # Source brain-context library
 source ~/.claude/hooks/lib/brain-context.sh
 

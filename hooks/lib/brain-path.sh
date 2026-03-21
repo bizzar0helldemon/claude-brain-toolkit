@@ -1,7 +1,7 @@
 # hooks/lib/brain-path.sh
 # Sourced library — do NOT execute directly. Source with: source hooks/lib/brain-path.sh
 #
-# Provides: brain_path_validate, brain_log_error, emit_json
+# Provides: brain_path_validate, brain_log_error, emit_json, write_brain_state
 # Compatible with: bash 3.2+, zsh 5.0+
 # All output uses printf (not echo) for portability.
 
@@ -208,6 +208,39 @@ update_encounter_count() {
   if ! mv "$tmp_file" "$store_path" 2>/dev/null; then
     rm -f "$tmp_file" 2>/dev/null
     brain_log_error "PatternStore" "atomic write failed for store at $store_path"
+  fi
+
+  return 0
+}
+
+# ------------------------------------------------------------------------------
+# write_brain_state <state>
+#
+# Writes the current brain state to $BRAIN_PATH/.brain-state atomically.
+# State file format: "<state> <ISO-8601-UTC-timestamp>"
+#
+# Args:
+#   $1 — state name: idle | captured | error
+#
+# Return codes: 0 always (never crashes calling hook)
+# ------------------------------------------------------------------------------
+write_brain_state() {
+  local state="$1"  # Expected: idle | captured | error
+
+  # Guard: only write if BRAIN_PATH is a valid directory
+  if [ ! -d "${BRAIN_PATH:-}" ]; then
+    return 0
+  fi
+
+  local state_file="$BRAIN_PATH/.brain-state"
+  local tmp_file="${state_file}.tmp.$$"
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  printf '%s\n' "$state $timestamp" > "$tmp_file" 2>/dev/null
+  if ! mv "$tmp_file" "$state_file" 2>/dev/null; then
+    rm -f "$tmp_file" 2>/dev/null
+    brain_log_error "BrainState" "Failed to write state: $state"
   fi
 
   return 0
