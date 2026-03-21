@@ -2,83 +2,44 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-19)
+See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** The brain compounds over time — every session makes future sessions smarter by actively capturing and applying knowledge without the user having to ask.
-**Current focus:** v1.0 complete — all phases done
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 6 of 6 (Resolve Brain-Scan Ref) — Complete
-Plan: 1 of 1 in current phase (complete)
-Status: ALL PHASES COMPLETE — v1.0 milestone reached
-Last activity: 2026-03-21 — Completed 06-01 (removed dangling /brain-scan references from brain-mode.md)
+Phase: 6 of 6 — v1.0 COMPLETE
+Plan: N/A
+Status: Milestone v1.0 shipped — ready for next milestone
+Last activity: 2026-03-21 — v1.0 milestone complete
 
-Progress: [██████████] 100% (Phase 1 complete + Phase 2 complete + Phase 3 complete + Phase 4 complete + Phase 5 complete + Phase 6 complete)
+Progress: [██████████] 100% — v1.0 shipped
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~6 minutes
-- Total execution time: ~29 minutes
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| Phase 1 | 2 | ~7 min | ~3.5 min |
-| Phase 2 | 2 | ~20 min | ~10 min |
-| Phase 3 | 2 | ~5 min | ~2.5 min |
-| Phase 4 | 2 | ~5 min | ~2.5 min |
-
-**Recent Trend:**
-- Last 5 plans: 03-01 (2 min), 03-02 (3 min), 04-01 (2 min), 04-02 (3 min), 05-01 (2 min)
-- Trend: Targeted installer updates very fast — clear pattern of incremental additions to setup.sh
-
-*Updated after each plan completion*
+- Total plans completed: 10
+- Total phases: 6
+- Timeline: 3 days (2026-03-19 -> 2026-03-21)
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- Orchestrate existing skills first (ship fast, learn what's missing from real usage)
-- Single vault per system (simplicity — one brain per human, one place to look)
-- BRAIN_PATH env var for vault location (cross-directory access needs a stable reference point)
-- Adaptive mentoring progression deferred to v2 (needs real vault data to tune thresholds safely)
-- jq is a hard dependency; installed to ~/bin on Windows (no admin required) — document in setup guide
-- BRAIN_PATH must be set in both shell profile AND settings.json env block (subshells don't load profiles)
-- Dual-channel errors in brain-path.sh: contextual multi-line stderr for humans, JSON stdout for Claude
-- emit_json exits 0 on invalid JSON (formatting bugs must not break sessions)
-- _BRAIN_CONTEXT_STATE_FILE temp-file pattern for propagating subshell state to parent (bash $() cannot mutate parent scope)
-- Pitfall count in summary includes only project-specific pitfall entries, not global ones
-- Stop hook uses decision:block (not additionalContext) so capture is guaranteed before session ends
-- PreCompact uses additionalContext (not decision:block) — compaction cannot be blocked, instruction is advisory
-- PostToolUse hook uses decision:block (synchronous, no async:true) — filtering done in-script, no matcher field
-- async:true removed from PostToolUseFailure proactively for Plan 02 compatibility (additionalContext requires sync)
-- jq ". as $p" binding required when referencing object fields inside contains() after a pipe — .key evaluates in string context otherwise
-- Write tool (not shell sourcing) for pattern store initialization from skill context — more reliable in agent runtime
-- exit 0 on all PostToolUseFailure paths — hook must never block tool use (Phase 1 exit 1 was an oversight)
-- setup.sh Phase 5b inserted between Phase 5 and Phase 6 for slash commands — maintains ordering without renumbering existing phases
-- Async:true cleanup jq pass placed after merge pass in setup.sh — strips legacy value even when command was already registered
-- /brain-scan is a standalone toolkit skill, not a brain-mode artifact — brain-mode.md Available Skills must only list skills deployed by setup.sh
-- Empty-vault guidance points to /brain-capture (the correct first-session action), not /brain-scan
+Full decision log archived in milestones/v1.0-ROADMAP.md.
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-- Phase 4 planning needs research: adaptive mentoring thresholds and error pattern classification approach are not yet designed — run `/gsd:research-phase` before detailed planning of Phase 4
-- Windows Git Bash compatibility: `stat` flags differ between macOS and Linux/Git Bash — `lib/brain-path.sh` must detect OS and branch accordingly
-- Verify post-Phase 3: whether `skills` frontmatter field in `agents/brain-mode.md` preloads existing brain-* skills at session start (live test required — field intentionally omitted in 03-01 until confirmed; documented in 03-01-SUMMARY.md)
+None — milestone shipped clean.
 
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Completed 06-01 (brain-mode.md cleaned — v1.0 milestone complete)
-Resume file: N/A — all phases complete
+Stopped at: v1.0 milestone completed and archived
+Resume with: `/gsd:new-milestone` to start v2.0 planning
