@@ -41,14 +41,24 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/post-tool-use.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PostToolUseFailure": [
       {
         "hooks": [
           {
             "type": "command",
             "command": "~/.claude/hooks/post-tool-use-failure.sh",
-            "timeout": 10,
-            "async": true
+            "timeout": 10
           }
         ]
       }
