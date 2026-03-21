@@ -91,7 +91,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 05-01-PLAN.md — Update setup.sh to deploy post-tool-use.sh hook and brain-add-pattern.md command
+- [x] 05-01-PLAN.md — Update setup.sh to deploy post-tool-use.sh hook and brain-add-pattern.md command
 
 ### Phase 6: Resolve /brain-scan Reference
 **Goal**: brain-mode.md contains no dangling references to non-existent artifacts
@@ -100,7 +100,10 @@ Plans:
 **Gap Closure:** Closes gaps from v1.0 milestone audit
 **Success Criteria** (what must be TRUE):
   1. brain-mode.md does not reference /brain-scan as a brain-mode artifact (it's an existing toolkit skill, not a brain-mode hook)
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 06-01-PLAN.md — Remove dangling /brain-scan references from brain-mode.md
 
 ## Progress
 
@@ -114,4 +117,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Onboarding + Entry Point | 2/2 | Complete | 2026-03-21 |
 | 4. Intelligence Layer | 2/2 | Complete | 2026-03-21 |
 | 5. Deploy Phase 4 Artifacts | 1/1 | Complete | 2026-03-21 |
-| 6. Resolve /brain-scan Reference | 0/? | Pending | — |
+| 6. Resolve /brain-scan Reference | 0/1 | Pending | — |
