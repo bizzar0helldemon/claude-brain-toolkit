@@ -16,7 +16,54 @@ if ! brain_path_validate; then
   exit 0
 fi
 
-brain_log_error "Stop" "Capture trigger fired"
+# Extract transcript path from hook input
+TRANSCRIPT_PATH=$(printf '%s' "$HOOK_INPUT" | jq -r '.transcript_path // ""')
+
+# Default: no signals detected
+TOOL_COUNT=0
+HAS_GIT_COMMIT=0
+HAS_FILE_CHANGES=0
+
+if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
+  # Count all Claude tool calls (excludes progress entries — filters to assistant messages only)
+  TOOL_COUNT=$(jq -r '
+    select(.type == "assistant") |
+    .message.content[]? |
+    select(.type == "tool_use") |
+    .name
+  ' "$TRANSCRIPT_PATH" 2>/dev/null | wc -l | tr -d ' ')
+
+  # Check for git commits in Bash tool calls
+  HAS_GIT_COMMIT=$(jq -r '
+    select(.type == "assistant") |
+    .message.content[]? |
+    select(.type == "tool_use") |
+    select(.name == "Bash") |
+    .input.command // ""
+  ' "$TRANSCRIPT_PATH" 2>/dev/null | grep -c 'git commit' || echo 0)
+
+  # Check for file write/edit operations
+  HAS_FILE_CHANGES=$(jq -r '
+    select(.type == "assistant") |
+    .message.content[]? |
+    select(.type == "tool_use") |
+    select(.name == "Write" or .name == "Edit") |
+    .name
+  ' "$TRANSCRIPT_PATH" 2>/dev/null | wc -l | tr -d ' ')
+fi
+
+# Determine if session has capturable content
+SHOULD_CAPTURE=false
+if [ "$TOOL_COUNT" -gt 0 ] || [ "$HAS_GIT_COMMIT" -gt 0 ] || [ "$HAS_FILE_CHANGES" -gt 0 ]; then
+  SHOULD_CAPTURE=true
+fi
+
+if [ "$SHOULD_CAPTURE" = "false" ]; then
+  # Trivial session — silent skip, no output
+  exit 0
+fi
+
+brain_log_error "Stop" "Capture trigger fired (tools: $TOOL_COUNT, commits: $HAS_GIT_COMMIT, files: $HAS_FILE_CHANGES)"
 
 REASON="Before ending this session, please run /brain-capture to preserve any useful patterns from this conversation, then run /daily-note to log a session summary. After completing both, briefly confirm what was captured (e.g., 'Brain captured: N learnings, daily note updated') and then you can stop."
 BLOCK_JSON=$(jq -n --arg reason "$REASON" '{"decision":"block","reason":$reason}')
