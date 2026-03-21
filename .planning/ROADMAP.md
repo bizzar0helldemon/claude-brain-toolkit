@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Hook Infrastructure** - Safe, validated hook scaffolding with BRAIN_PATH library, stop-loop guard, exit code discipline, and brain statusline indicator (completed 2026-03-20)
 - [x] **Phase 2: Session Lifecycle** - Automatic vault context injection at session start, pre-clear capture, and token budget management (completed 2026-03-20)
-- [ ] **Phase 3: Onboarding + Entry Point** - First-run guided setup and `claude --agent brain-mode` launch path
+- [x] **Phase 3: Onboarding + Entry Point** - First-run guided setup and `claude --agent brain-mode` launch path (completed 2026-03-21)
 - [ ] **Phase 4: Intelligence Layer** - Milestone auto-capture and error pattern recognition on top of a populated vault
 
 ## Phase Details
@@ -60,8 +60,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — brain-mode.md agent definition + brain-setup onboarding wizard skill
-- [ ] 03-02-PLAN.md — setup.sh installer rewrite + project settings.json agent default + deployment verification
+- [x] 03-01-PLAN.md — brain-mode.md agent definition + brain-setup onboarding wizard skill
+- [x] 03-02-PLAN.md — setup.sh installer rewrite + project settings.json agent default + deployment verification
 
 ### Phase 4: Intelligence Layer
 **Goal**: Brain mode actively captures knowledge at meaningful moments and surfaces past error solutions without the user invoking any commands
@@ -85,5 +85,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Hook Infrastructure | 2/2 | Complete | 2026-03-20 |
 | 2. Session Lifecycle | 2/2 | Complete | 2026-03-20 |
-| 3. Onboarding + Entry Point | 0/2 | Not started | - |
+| 3. Onboarding + Entry Point | 2/2 | Complete | 2026-03-21 |
 | 4. Intelligence Layer | 0/TBD | Not started | - |

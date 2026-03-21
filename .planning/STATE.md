@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** The brain compounds over time — every session makes future sessions smarter by actively capturing and applying knowledge without the user having to ask.
-**Current focus:** Phase 3 — Onboarding + Entry Point (next up)
+**Current focus:** Phase 4 — Intelligence Layer (next up)
 
 ## Current Position
 
-Phase: 3 of 4 (Onboarding + Entry Point) — In progress
-Plan: 1 of 2 in current phase (complete)
-Status: In progress — 03-01 complete, 03-02 next (deploy + entry point)
-Last activity: 2026-03-21 — Completed 03-01 (brain-mode subagent + brain-setup skill)
+Phase: 3 of 4 (Onboarding + Entry Point) — Complete
+Plan: 2 of 2 in current phase (complete)
+Status: Phase 3 complete — ready for Phase 4 planning
+Last activity: 2026-03-21 — Completed 03-02 (setup.sh installer + deployment verification)
 
-Progress: [██████░░░░] 60% (Phase 1 complete + Phase 2 complete + Phase 3 Plan 1 complete)
+Progress: [████████░░] 75% (Phase 1 complete + Phase 2 complete + Phase 3 complete)
 
 ## Performance Metrics
 
@@ -29,11 +29,11 @@ Progress: [██████░░░░] 60% (Phase 1 complete + Phase 2 compl
 |-------|-------|-------|----------|
 | Phase 1 | 2 | ~7 min | ~3.5 min |
 | Phase 2 | 2 | ~20 min | ~10 min |
-| Phase 3 | 1 (so far) | ~2 min | ~2 min |
+| Phase 3 | 2 | ~5 min | ~2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4 min), 01-02 (3 min), 02-01 (15 min), 02-02 (5 min), 03-01 (2 min)
-- Trend: 02-01 longer due to subshell bug discovery and fix; 02-02 fast (implementation was straightforward)
+- Last 5 plans: 01-02 (3 min), 02-01 (15 min), 02-02 (5 min), 03-01 (2 min), 03-02 (3 min)
+- Trend: 02-01 longer due to subshell bug discovery and fix; Phase 3 fast (both plans under 3 min each)
 
 *Updated after each plan completion*
 
@@ -64,12 +64,11 @@ None yet.
 ### Blockers/Concerns
 
 - Phase 4 planning needs research: adaptive mentoring thresholds and error pattern classification approach are not yet designed — run `/gsd:research-phase` before detailed planning of Phase 4
-- Phase 3 onboarding UX needs concrete design before planning: two distinct cases (BRAIN_PATH unset vs set but vault empty) need different flows
 - Windows Git Bash compatibility: `stat` flags differ between macOS and Linux/Git Bash — `lib/brain-path.sh` must detect OS and branch accordingly
-- Verify post-Phase 3: whether `skills` frontmatter field in `agents/brain-mode.md` preloads existing brain-* skills at session start (live test required — field intentionally omitted in 03-01 until confirmed)
+- Verify post-Phase 3: whether `skills` frontmatter field in `agents/brain-mode.md` preloads existing brain-* skills at session start (live test required — field intentionally omitted in 03-01 until confirmed; documented in 03-01-SUMMARY.md)
 
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Completed 03-01 (brain-mode subagent + brain-setup skill)
-Resume file: .planning/phases/03-onboarding-entry-point/03-02-PLAN.md
+Stopped at: Completed 03-02 (setup.sh installer + deployment verification) — Phase 3 complete
+Resume file: .planning/phases/04-intelligence-layer/ (run /gsd:research-phase for Phase 4 before planning)
