@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 9 — Error Pattern Intelligence
-Plan: —
-Status: Roadmap created, ready to plan Phase 9
-Last activity: 2026-03-21 — v1.2 roadmap created (Phases 9-11)
+Plan: 01 of 01 (complete)
+Status: Phase 9 complete
+Last activity: 2026-03-21 — Completed 09-01-PLAN.md (adaptive error tier responses + pruning)
 
-Progress: [░░░░░░░░░░] 0% (v1.2)
+Progress: [███░░░░░░░] 33% (v1.2 — 1 of 3 phases complete)
 
 ## Performance Metrics
 
@@ -53,6 +53,9 @@ Decisions logged in PROJECT.md Key Decisions table.
 - Phase 8: captured written AFTER emit_json in stop.sh (ordering critical per Pitfall 3)
 - v1.2 roadmap: MENT-01 and MENT-02 combined into Phase 9 (counter infrastructure and adaptive behavior are inseparable — shipping split would leave dead code)
 - v1.2 roadmap: Build order MENT-01 → MENT-02 → ONBR-03 → LIFE-06 per research dependency analysis
+- Phase 9: prune_pattern_store called inside update_encounter_count (not in hook) — pruning is automatic for all callers
+- Phase 9: Tier thresholds hardcoded (1=full, 2-4=brief, 5+=root-cause) — configurable in future if needed
+- Phase 9: jq -n with --arg replaces hand-assembled JSON in post-tool-use-failure.sh — fixes Phase 4 injection vulnerability
 
 ### Pending Todos
 
@@ -65,5 +68,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: v1.2 roadmap created — Phases 9, 10, 11 defined
-Resume with: `/gsd:plan-phase 9`
+Stopped at: Phase 9 Plan 01 complete — adaptive tier responses and pattern store pruning shipped
+Resume with: `/gsd:plan-phase 10`
