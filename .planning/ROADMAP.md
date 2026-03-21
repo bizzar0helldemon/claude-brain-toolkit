@@ -16,6 +16,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Session Lifecycle** - Automatic vault context injection at session start, pre-clear capture, and token budget management (completed 2026-03-20)
 - [x] **Phase 3: Onboarding + Entry Point** - First-run guided setup and `claude --agent brain-mode` launch path (completed 2026-03-21)
 - [x] **Phase 4: Intelligence Layer** - Milestone auto-capture and error pattern recognition on top of a populated vault (completed 2026-03-21)
+- [ ] **Phase 5: Deploy Phase 4 Artifacts** - Update setup.sh to deploy post-tool-use.sh, register PostToolUse hook, and deploy commands/ directory (Gap Closure)
+- [ ] **Phase 6: Resolve /brain-scan Reference** - Remove dangling /brain-scan reference from brain-mode.md (Gap Closure)
 
 ## Phase Details
 
@@ -77,10 +79,30 @@ Plans:
 - [x] 04-01-PLAN.md — PostToolUse git commit detection hook + settings.json registration
 - [x] 04-02-PLAN.md — Error pattern recognition in PostToolUseFailure + pattern store + /brain-add-pattern skill
 
+### Phase 5: Deploy Phase 4 Artifacts
+**Goal**: All Phase 4 artifacts are deployed by setup.sh so git commit capture and error pattern recognition work post-install
+**Depends on**: Phase 4
+**Requirements**: LIFE-04 (full), LIFE-05 (full)
+**Gap Closure:** Closes gaps from v1.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. After running setup.sh, post-tool-use.sh exists in ~/.claude/hooks/ and PostToolUse is registered in ~/.claude/settings.json
+  2. After running setup.sh, commands/brain-add-pattern.md is deployed to ~/.claude/commands/
+  3. E2E Flow 3 (git commit capture) and Flow 4 (pattern addition) work end-to-end post-install
+**Plans:** TBD
+
+### Phase 6: Resolve /brain-scan Reference
+**Goal**: brain-mode.md contains no dangling references to non-existent artifacts
+**Depends on**: Nothing
+**Requirements**: None (integration cleanup)
+**Gap Closure:** Closes gaps from v1.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. brain-mode.md does not reference /brain-scan as a brain-mode artifact (it's an existing toolkit skill, not a brain-mode hook)
+**Plans:** TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -88,3 +110,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 2. Session Lifecycle | 2/2 | Complete | 2026-03-20 |
 | 3. Onboarding + Entry Point | 2/2 | Complete | 2026-03-21 |
 | 4. Intelligence Layer | 2/2 | Complete | 2026-03-21 |
+| 5. Deploy Phase 4 Artifacts | 0/? | Pending | — |
+| 6. Resolve /brain-scan Reference | 0/? | Pending | — |
