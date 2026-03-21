@@ -71,19 +71,20 @@ Plans:
   1. After a `git commit` or PR merge, a brain-capture entry is automatically created in the vault without any user action
   2. When an error occurs that matches a pattern already in the vault, the brain surfaces the past solution in the current session context
   3. The pattern store (`pattern-store.json`) records encounter counts that increment correctly across sessions, verifiable by inspecting the file
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md — PostToolUse git commit detection hook + settings.json registration
+- [ ] 04-02-PLAN.md — Error pattern recognition in PostToolUseFailure + pattern store + /brain-add-pattern skill
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Hook Infrastructure | 2/2 | Complete | 2026-03-20 |
 | 2. Session Lifecycle | 2/2 | Complete | 2026-03-20 |
 | 3. Onboarding + Entry Point | 2/2 | Complete | 2026-03-21 |
-| 4. Intelligence Layer | 0/TBD | Not started | - |
+| 4. Intelligence Layer | 0/2 | Not started | - |
