@@ -27,11 +27,15 @@ The brain compounds over time — every session makes future sessions smarter by
 
 ### Active
 
+- [ ] STOP-01: Smart stop hook — detect whether session produced capturable content before triggering capture
 - [ ] STAT-02: Color-coded brain states in statusline (idle vs active processing)
-- [ ] LIFE-06: Idle detection offers to summarize or capture current state when user pauses
-- [ ] ONBR-03: Vault relocate command updates BRAIN_PATH if vault directory moves
-- [ ] MENT-01: Pattern encounter tracking records frequency per pattern/pitfall
-- [ ] MENT-02: Progressive response changes behavior based on encounter count (warn -> silent fix -> investigate)
+
+### Future
+
+- [ ] LIFE-06: Idle detection offers to summarize or capture current state when user pauses — deferred, fix intrusiveness first
+- [ ] ONBR-03: Vault relocate command updates BRAIN_PATH if vault directory moves — utility, not UX-critical
+- [ ] MENT-01: Pattern encounter tracking records frequency per pattern/pitfall — needs real usage data
+- [ ] MENT-02: Progressive response changes behavior based on encounter count — same intrusiveness risk
 
 ### Out of Scope
 
@@ -39,6 +43,14 @@ The brain compounds over time — every session makes future sessions smarter by
 - Cloud sync — vault is local filesystem only, no external services
 - Non-Claude-Code integrations — specifically for Claude Code CLI
 - Mobile/web interface — CLI-only tool
+
+## Current Milestone: v1.1 Quiet Brain
+
+**Goal:** Reduce brain mode intrusiveness — make it helpful without being annoying.
+
+**Target features:**
+- Smart stop hook that only triggers capture when the session produced something worth capturing
+- Color-coded statusline states that passively show brain activity without interrupting
 
 ## Context
 
@@ -71,5 +83,7 @@ Initial deployment covers 5 lifecycle hooks, 1 agent definition, 1 onboarding sk
 | PostToolUse/Failure hooks synchronous | Filtering done in-script, no async race conditions | ✓ Good |
 | /brain-scan is toolkit skill, not brain-mode artifact | Available Skills must only list deployed skills | ✓ Good — clear boundary |
 
+| Fix intrusiveness before adding features | Stop hook firing 4x on empty sessions proved proactive features need intelligence before expansion | — Pending |
+
 ---
-*Last updated: 2026-03-21 after v1.0 milestone*
+*Last updated: 2026-03-21 after v1.1 milestone started*
