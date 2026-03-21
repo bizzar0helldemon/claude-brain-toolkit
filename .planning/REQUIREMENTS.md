@@ -15,8 +15,8 @@ Requirements for v1.1 Quiet Brain. Each maps to roadmap phases.
 
 ### Statusline States
 
-- [ ] **STAT-02**: Statusline shows distinct visual states — idle (🧠), active/captured (🟢🧠), error/degraded (🔴🧠)
-- [ ] **STAT-03**: State transitions happen automatically based on hook activity (no user action needed)
+- [x] **STAT-02**: Statusline shows distinct visual states — idle (🧠), active/captured (🟢🧠), error/degraded (🔴🧠)
+- [x] **STAT-03**: State transitions happen automatically based on hook activity (no user action needed)
 
 ## Future Requirements
 
@@ -56,8 +56,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STOP-01 | Phase 7 | Complete |
 | STOP-02 | Phase 7 | Complete |
 | STOP-03 | Phase 7 | Complete |
-| STAT-02 | Phase 8 | Pending |
-| STAT-03 | Phase 8 | Pending |
+| STAT-02 | Phase 8 | Complete |
+| STAT-03 | Phase 8 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 5 total

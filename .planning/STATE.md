@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** The brain compounds over time — every session makes future sessions smarter by actively capturing and applying knowledge without the user having to ask.
-**Current focus:** Phase 7 — Smart Stop Hook (v1.1 Quiet Brain)
+**Current focus:** v1.1 Quiet Brain — complete
 
 ## Current Position
 
@@ -46,6 +46,8 @@ Decisions logged in PROJECT.md Key Decisions table.
 - Phase 7: TOOL_COUNT > 0 is sufficient threshold for v1.1 — any tool use = non-trivial work
 - Phase 7: Error resolution captured implicitly via TOOL_COUNT > 0 — no separate signal needed
 - Phase 7: Missing transcript_path defaults to trivial (no block) — conservative in correct direction
+- Phase 8 (pre-execution): Tightened stop hook threshold to HAS_FILE_CHANGES > 0 || HAS_GIT_COMMIT > 0 (TOOL_COUNT alone too aggressive)
+- Phase 8 (pre-execution): Removed /daily-note from stop hook prompt (daily notes now manual/opt-in)
 - Phase 8: write_brain_state lives in brain-path.sh shared library (not duplicated per hook)
 - Phase 8: Error state resets to idle on SessionStart — statusline is live indicator, not historical
 - Phase 8: captured written AFTER emit_json in stop.sh (ordering critical per Pitfall 3)
