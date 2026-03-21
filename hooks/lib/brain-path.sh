@@ -121,3 +121,94 @@ emit_json() {
     exit 0
   fi
 }
+
+# ------------------------------------------------------------------------------
+# init_pattern_store <store_path>
+#
+# Ensures the pattern store file exists with a valid empty schema.
+# Creates parent directory if needed. No-op if file already exists.
+#
+# Args:
+#   $1 — absolute path to pattern-store.json
+#
+# Return codes: 0 always
+# ------------------------------------------------------------------------------
+init_pattern_store() {
+  local store_path="$1"
+  local store_dir
+  store_dir=$(dirname "$store_path")
+
+  # Create parent directory if it doesn't exist
+  mkdir -p "$store_dir"
+
+  # No-op if store already exists
+  if [ -f "$store_path" ]; then
+    return 0
+  fi
+
+  local now
+  now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  local tmp_file
+  tmp_file="${store_path}.tmp.$$"
+
+  printf '%s\n' "{\"version\":\"1\",\"created\":\"$now\",\"updated\":\"$now\",\"patterns\":[]}" > "$tmp_file"
+
+  if ! mv "$tmp_file" "$store_path" 2>/dev/null; then
+    rm -f "$tmp_file" 2>/dev/null
+    brain_log_error "PatternStore" "Failed to initialize pattern store at $store_path"
+  fi
+
+  return 0
+}
+
+# ------------------------------------------------------------------------------
+# update_encounter_count <store_path> <error_message>
+#
+# Increments encounter_count and sets last_seen for any pattern whose key
+# is contained in the error message (case-insensitive match).
+# Writes atomically via temp+mv. Never crashes the calling hook.
+#
+# Args:
+#   $1 — absolute path to pattern-store.json
+#   $2 — error message string to match against pattern keys
+#
+# Return codes: 0 always
+# ------------------------------------------------------------------------------
+update_encounter_count() {
+  local store_path="$1"
+  local error_msg="$2"
+  local now
+  now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  local tmp_file
+  tmp_file="${store_path}.tmp.$$"
+
+  # Use jq to update matching patterns atomically.
+  # `. as $p` binds the pattern object before select so .key is accessible
+  # inside the contains() call (which otherwise evaluates in string context).
+  if ! jq \
+    --arg now "$now" \
+    --arg error_msg "$error_msg" \
+    '.updated = $now |
+     .patterns = [
+       .patterns[] |
+       . as $p |
+       if ($error_msg | ascii_downcase) | contains($p.key | ascii_downcase)
+       then .encounter_count += 1 | .last_seen = $now
+       else .
+       end
+     ]' \
+    "$store_path" > "$tmp_file" 2>/dev/null; then
+    rm -f "$tmp_file" 2>/dev/null
+    brain_log_error "PatternStore" "jq update failed for store at $store_path"
+    return 0
+  fi
+
+  if ! mv "$tmp_file" "$store_path" 2>/dev/null; then
+    rm -f "$tmp_file" 2>/dev/null
+    brain_log_error "PatternStore" "atomic write failed for store at $store_path"
+  fi
+
+  return 0
+}
