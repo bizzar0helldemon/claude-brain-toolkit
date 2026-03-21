@@ -100,6 +100,7 @@ cp "$REPO_DIR/hooks/session-start.sh" "$CLAUDE_DIR/hooks/session-start.sh"
 cp "$REPO_DIR/hooks/stop.sh" "$CLAUDE_DIR/hooks/stop.sh"
 cp "$REPO_DIR/hooks/pre-compact.sh" "$CLAUDE_DIR/hooks/pre-compact.sh"
 cp "$REPO_DIR/hooks/post-tool-use-failure.sh" "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"
+cp "$REPO_DIR/hooks/post-tool-use.sh" "$CLAUDE_DIR/hooks/post-tool-use.sh"
 
 cp "$REPO_DIR/hooks/lib/brain-path.sh" "$CLAUDE_DIR/hooks/lib/brain-path.sh"
 cp "$REPO_DIR/hooks/lib/brain-context.sh" "$CLAUDE_DIR/hooks/lib/brain-context.sh"
@@ -110,6 +111,7 @@ echo "  + session-start.sh deployed"
 echo "  + stop.sh deployed"
 echo "  + pre-compact.sh deployed"
 echo "  + post-tool-use-failure.sh deployed"
+echo "  + post-tool-use.sh deployed"
 echo "  + lib/brain-path.sh deployed"
 echo "  + lib/brain-context.sh deployed"
 
@@ -121,6 +123,15 @@ echo "[5/9] Deploying statusline..."
 cp "$REPO_DIR/statusline.sh" "$CLAUDE_DIR/statusline.sh"
 chmod +x "$CLAUDE_DIR/statusline.sh"
 echo "  + statusline.sh deployed to $CLAUDE_DIR/"
+
+echo ""
+
+# ---- Phase 5b: Deploy slash commands ----
+echo "[5b/9] Deploying slash commands..."
+
+mkdir -p "$CLAUDE_DIR/commands/brain"
+cp "$REPO_DIR/commands/brain-add-pattern.md" "$CLAUDE_DIR/commands/brain/brain-add-pattern.md"
+echo "  + brain-add-pattern.md deployed to $CLAUDE_DIR/commands/brain/"
 
 echo ""
 
@@ -143,7 +154,8 @@ BRAIN_HOOKS=$(cat <<'HOOKS_EOF'
   "SessionStart": [{"hooks":[{"type":"command","command":"~/.claude/hooks/session-start.sh","timeout":10}]}],
   "PreCompact": [{"hooks":[{"type":"command","command":"~/.claude/hooks/pre-compact.sh","timeout":10}]}],
   "Stop": [{"hooks":[{"type":"command","command":"~/.claude/hooks/stop.sh","timeout":10}]}],
-  "PostToolUseFailure": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use-failure.sh","timeout":10,"async":true}]}]
+  "PostToolUseFailure": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use-failure.sh","timeout":10}]}],
+  "PostToolUse": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use.sh","timeout":10}]}]
 }
 HOOKS_EOF
 )
@@ -158,6 +170,16 @@ jq --argjson bh "$BRAIN_HOOKS" '
     end
   )
   | .statusLine = {"type":"command","command":"~/.claude/statusline.sh"}
+' "$SETTINGS" > "$TEMP" && mv "$TEMP" "$SETTINGS"
+
+# Remove async:true from PostToolUseFailure (Phase 4 requirement: sync hooks only)
+jq '
+  if .hooks.PostToolUseFailure then
+    .hooks.PostToolUseFailure = [
+      .hooks.PostToolUseFailure[] |
+      .hooks = [.hooks[] | del(.async)]
+    ]
+  else . end
 ' "$SETTINGS" > "$TEMP" && mv "$TEMP" "$SETTINGS"
 
 echo "  + Brain hooks merged into $SETTINGS (idempotent)"
@@ -204,15 +226,24 @@ check_file "$CLAUDE_DIR/hooks/session-start.sh"                 "hooks/session-s
 check_file "$CLAUDE_DIR/hooks/stop.sh"                          "hooks/stop.sh"
 check_file "$CLAUDE_DIR/hooks/pre-compact.sh"                   "hooks/pre-compact.sh"
 check_file "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"         "hooks/post-tool-use-failure.sh"
+check_file "$CLAUDE_DIR/hooks/post-tool-use.sh"                 "hooks/post-tool-use.sh"
 check_file "$CLAUDE_DIR/hooks/lib/brain-path.sh"                "hooks/lib/brain-path.sh"
 check_file "$CLAUDE_DIR/hooks/lib/brain-context.sh"             "hooks/lib/brain-context.sh"
 check_file "$CLAUDE_DIR/statusline.sh"                          "statusline.sh"
+check_file "$CLAUDE_DIR/commands/brain/brain-add-pattern.md"    "commands/brain/brain-add-pattern.md"
 
 # Check settings.json contains brain hooks
 if jq '.hooks.SessionStart' "$SETTINGS" 2>/dev/null | grep -q "session-start.sh"; then
   echo "  + settings.json contains brain SessionStart hook"
 else
   echo "  x settings.json missing brain SessionStart hook"
+  PASS=false
+fi
+
+if jq '.hooks.PostToolUse' "$SETTINGS" 2>/dev/null | grep -q "post-tool-use.sh"; then
+  echo "  + settings.json contains brain PostToolUse hook"
+else
+  echo "  x settings.json missing brain PostToolUse hook"
   PASS=false
 fi
 
