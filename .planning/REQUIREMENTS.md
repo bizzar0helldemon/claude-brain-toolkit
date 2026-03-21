@@ -9,9 +9,9 @@ Requirements for v1.1 Quiet Brain. Each maps to roadmap phases.
 
 ### Stop Hook Intelligence
 
-- [ ] **STOP-01**: Stop hook evaluates session content before triggering capture (detects tool usage, code changes, git commits, error resolutions)
-- [ ] **STOP-02**: Trivial sessions (few messages, no code/commits/decisions) skip capture silently
-- [ ] **STOP-03**: Stop hook exits non-blocking (exit 0) when no capturable content detected, blocking (exit 2) only when capture is warranted
+- [x] **STOP-01**: Stop hook evaluates session content before triggering capture (detects tool usage, code changes, git commits, error resolutions)
+- [x] **STOP-02**: Trivial sessions (few messages, no code/commits/decisions) skip capture silently
+- [x] **STOP-03**: Stop hook exits non-blocking (exit 0) when no capturable content detected, blocking (decision:block + exit 0) only when capture is warranted
 
 ### Statusline States
 
@@ -53,9 +53,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STOP-01 | Phase 7 | Pending |
-| STOP-02 | Phase 7 | Pending |
-| STOP-03 | Phase 7 | Pending |
+| STOP-01 | Phase 7 | Complete |
+| STOP-02 | Phase 7 | Complete |
+| STOP-03 | Phase 7 | Complete |
 | STAT-02 | Phase 8 | Pending |
 | STAT-03 | Phase 8 | Pending |
 
