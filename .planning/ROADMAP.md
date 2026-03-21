@@ -113,7 +113,7 @@ Plans:
   5. On encounter 5+, brain mode flags the pattern for root cause investigation rather than repeating the solution
 
 Plans:
-- [ ] 09-01-PLAN.md — Prune function, tier calculation, safe JSON, agent tier-response instructions
+- [x] 09-01-PLAN.md — Prune function, tier calculation, safe JSON, agent tier-response instructions
 
 #### Phase 10: Vault Relocation
 **Goal**: A user can move their vault to a new path without manual config surgery
@@ -149,6 +149,6 @@ Plans:
 | 6. Resolve /brain-scan Reference | v1.0 | 1/1 | Complete | 2026-03-21 |
 | 7. Smart Stop Hook | v1.1 | 1/1 | Complete | 2026-03-21 |
 | 8. Statusline States | v1.1 | 1/1 | Complete | 2026-03-21 |
-| 9. Error Pattern Intelligence | v1.2 | 0/1 | Pending | — |
+| 9. Error Pattern Intelligence | v1.2 | 1/1 | Complete | 2026-03-21 |
 | 10. Vault Relocation | v1.2 | 0/? | Pending | — |
 | 11. Idle Capture Offer | v1.2 | 0/? | Pending | — |
