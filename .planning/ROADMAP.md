@@ -104,12 +104,16 @@ Plans:
 **Goal**: Brain mode delivers progressively smarter responses to recurring errors — not repeating the same explanation every time
 **Depends on**: Phase 4 (error pattern store exists as baseline)
 **Requirements**: MENT-01, MENT-02
+**Plans**: 1 plan
 **Success Criteria** (what must be TRUE):
   1. After each error match, encounter_count for that pattern increments in the pattern store (verifiable by inspecting the store file)
   2. The pattern store never grows unbounded — a soft-cap prune removes the least-used patterns when the cap is exceeded
   3. On first encounter of a known error, brain mode gives a full explanation with solution steps
   4. On encounters 2-4 of the same error, brain mode gives a brief reminder note instead of the full explanation
   5. On encounter 5+, brain mode flags the pattern for root cause investigation rather than repeating the solution
+
+Plans:
+- [ ] 09-01-PLAN.md — Prune function, tier calculation, safe JSON, agent tier-response instructions
 
 #### Phase 10: Vault Relocation
 **Goal**: A user can move their vault to a new path without manual config surgery
@@ -145,6 +149,6 @@ Plans:
 | 6. Resolve /brain-scan Reference | v1.0 | 1/1 | Complete | 2026-03-21 |
 | 7. Smart Stop Hook | v1.1 | 1/1 | Complete | 2026-03-21 |
 | 8. Statusline States | v1.1 | 1/1 | Complete | 2026-03-21 |
-| 9. Error Pattern Intelligence | v1.2 | 0/? | Pending | — |
+| 9. Error Pattern Intelligence | v1.2 | 0/1 | Pending | — |
 | 10. Vault Relocation | v1.2 | 0/? | Pending | — |
 | 11. Idle Capture Offer | v1.2 | 0/? | Pending | — |
