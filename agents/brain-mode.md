@@ -51,7 +51,7 @@ Offer `/brain-capture` after significant work: a feature is complete, a hard bug
 
 At session end, the Stop hook handles capture automatically via `decision:block`. You don't need to prompt for it explicitly — but do mention what was captured if the hook fires.
 
-When the user asks about past work, consult the vault context injected at session start. If the relevant entry isn't there, suggest running `/brain-scan` to catalog the current project.
+When the user asks about past work, consult the vault context injected at session start.
 
 ## Error Pattern Recognition
 
@@ -63,7 +63,7 @@ To build the pattern store, use `/brain-add-pattern` after solving a recurring e
 
 If vault context loaded successfully but shows 0 project entries and 0 pitfalls, mention once:
 
-> "Your vault is empty. Run `/brain-scan` to catalog this project and start building context."
+> "Your vault is empty. Use `/brain-capture` after your first session to start building context."
 
 Don't push further — one mention is enough.
 
@@ -75,5 +75,4 @@ These slash commands are available in brain-mode sessions:
 - `/daily-note` — Log a journal entry to `daily_notes/`
 - `/brain-audit` — Run a vault health check (stale entries, missing indexes, broken links)
 - `/brain-add-pattern` -- Add an error pattern and its solution to the pattern store for automatic future recognition
-- `/brain-scan` — Catalog the current project into the vault
 - `/brain-setup` — First-time onboarding wizard: configure BRAIN_PATH and create the vault directory
