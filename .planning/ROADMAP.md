@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Onboarding + Entry Point** - First-run guided setup and `claude --agent brain-mode` launch path (completed 2026-03-21)
 - [x] **Phase 4: Intelligence Layer** - Milestone auto-capture and error pattern recognition on top of a populated vault (completed 2026-03-21)
 - [x] **Phase 5: Deploy Phase 4 Artifacts** - Update setup.sh to deploy post-tool-use.sh, register PostToolUse hook, and deploy commands/ directory (Gap Closure)
-- [ ] **Phase 6: Resolve /brain-scan Reference** - Remove dangling /brain-scan reference from brain-mode.md (Gap Closure)
+- [x] **Phase 6: Resolve /brain-scan Reference** - Remove dangling /brain-scan reference from brain-mode.md (Gap Closure) (completed 2026-03-21)
 
 ## Phase Details
 
@@ -103,7 +103,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 06-01-PLAN.md — Remove dangling /brain-scan references from brain-mode.md
+- [x] 06-01-PLAN.md — Remove dangling /brain-scan references from brain-mode.md
 
 ## Progress
 
@@ -117,4 +117,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Onboarding + Entry Point | 2/2 | Complete | 2026-03-21 |
 | 4. Intelligence Layer | 2/2 | Complete | 2026-03-21 |
 | 5. Deploy Phase 4 Artifacts | 1/1 | Complete | 2026-03-21 |
-| 6. Resolve /brain-scan Reference | 0/1 | Pending | — |
+| 6. Resolve /brain-scan Reference | 1/1 | Complete | 2026-03-21 |
