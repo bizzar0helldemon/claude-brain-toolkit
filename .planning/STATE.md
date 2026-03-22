@@ -9,18 +9,18 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: 9 — Error Pattern Intelligence
+Phase: 10 — Vault Relocation
 Plan: 01 of 01 (complete)
-Status: Phase 9 complete
-Last activity: 2026-03-21 — Completed 09-01-PLAN.md (adaptive error tier responses + pruning)
+Status: Phase 10 complete
+Last activity: 2026-03-21 — Completed 10-01-PLAN.md (/brain-relocate slash command)
 
-Progress: [███░░░░░░░] 33% (v1.2 — 1 of 3 phases complete)
+Progress: [██████░░░░] 67% (v1.2 — 2 of 3 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12 (10 v1.0 + 2 v1.1)
-- Total phases: 8 (6 v1.0 + 2 v1.1)
+- Total plans completed: 14 (10 v1.0 + 2 v1.1 + 2 v1.2)
+- Total phases: 10 (6 v1.0 + 2 v1.1 + 2 v1.2)
 - Timeline: 3 days (2026-03-19 -> 2026-03-21)
 
 **By Phase (v1.0):**
@@ -31,7 +31,7 @@ Progress: [███░░░░░░░] 33% (v1.2 — 1 of 3 phases complete)
 | 5-6 | 1 each | 2 plans | ~3 min |
 
 **Recent Trend:**
-- v1.1 velocity: stable
+- v1.2 velocity: stable
 - Trend: Stable
 
 ## Accumulated Context
@@ -56,6 +56,10 @@ Decisions logged in PROJECT.md Key Decisions table.
 - Phase 9: prune_pattern_store called inside update_encounter_count (not in hook) — pruning is automatic for all callers
 - Phase 9: Tier thresholds hardcoded (1=full, 2-4=brief, 5+=root-cause) — configurable in future if needed
 - Phase 9: jq -n with --arg replaces hand-assembled JSON in post-tool-use-failure.sh — fixes Phase 4 injection vulnerability
+- Phase 10: Slash command format (not skill) — matches brain-add-pattern precedent
+- Phase 10: Re-point only by default; copy offered when old path exists and new path empty
+- Phase 10: Never mv vault — cp -r for safety, user deletes old copy manually
+- Phase 10: BRAIN_PATH unset redirects to /brain-setup (not handled inline)
 
 ### Pending Todos
 
@@ -68,5 +72,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Phase 9 Plan 01 complete — adaptive tier responses and pattern store pruning shipped
-Resume with: `/gsd:plan-phase 10`
+Stopped at: Phase 10 Plan 01 complete — /brain-relocate command shipped
+Resume with: `/gsd:plan-phase 11`

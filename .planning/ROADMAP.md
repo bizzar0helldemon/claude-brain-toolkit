@@ -127,7 +127,7 @@ Plans:
   4. A post-relocate verification confirms brain mode can read the vault at the new path before declaring success
 
 Plans:
-- [ ] 10-01-PLAN.md — Create /brain-relocate slash command + setup.sh deployment + brain-mode.md listing
+- [x] 10-01-PLAN.md — Create /brain-relocate slash command + setup.sh deployment + brain-mode.md listing
 
 #### Phase 11: Idle Capture Offer
 **Goal**: Brain mode notices when the user has paused and quietly offers to capture if the session has something worth capturing
@@ -154,5 +154,5 @@ Plans:
 | 7. Smart Stop Hook | v1.1 | 1/1 | Complete | 2026-03-21 |
 | 8. Statusline States | v1.1 | 1/1 | Complete | 2026-03-21 |
 | 9. Error Pattern Intelligence | v1.2 | 1/1 | Complete | 2026-03-21 |
-| 10. Vault Relocation | v1.2 | 0/1 | Planned | — |
+| 10. Vault Relocation | v1.2 | 1/1 | Complete | 2026-03-21 |
 | 11. Idle Capture Offer | v1.2 | 0/? | Pending | — |
