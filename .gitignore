@@ -12,6 +12,9 @@ IDENTITY.md
 !intake/_INDEX.md
 !prompts/_INDEX.md
 
+# Local dev overrides (never ship to users)
+CLAUDE.local.md
+
 # OS files
 .DS_Store
 Thumbs.db
