@@ -133,11 +133,15 @@ Plans:
 **Goal**: Brain mode notices when the user has paused and quietly offers to capture if the session has something worth capturing
 **Depends on**: Phase 7 (capturable-content detection logic from stop.sh)
 **Requirements**: LIFE-06
+**Plans**: 1 plan
 **Success Criteria** (what must be TRUE):
   1. When the user is idle and the session has capturable content, brain mode offers to capture once
   2. The offer does not fire again in the same session regardless of further idle periods (one-offer-per-session guard)
   3. When the session has no capturable content, idle detection stays silent
   4. The offer fires via the idle hook without blocking or slowing down the session
+
+Plans:
+- [ ] 11-01-PLAN.md — Shared content detection, notification-idle.sh hook, one-offer guard, deployment
 
 ## Progress
 
@@ -155,4 +159,4 @@ Plans:
 | 8. Statusline States | v1.1 | 1/1 | Complete | 2026-03-21 |
 | 9. Error Pattern Intelligence | v1.2 | 1/1 | Complete | 2026-03-21 |
 | 10. Vault Relocation | v1.2 | 1/1 | Complete | 2026-03-21 |
-| 11. Idle Capture Offer | v1.2 | 0/? | Pending | — |
+| 11. Idle Capture Offer | v1.2 | 0/1 | Planned | — |
