@@ -97,7 +97,6 @@ echo "[4/9] Deploying hook scripts..."
 mkdir -p "$CLAUDE_DIR/hooks/lib"
 
 cp "$REPO_DIR/hooks/session-start.sh" "$CLAUDE_DIR/hooks/session-start.sh"
-cp "$REPO_DIR/hooks/stop.sh" "$CLAUDE_DIR/hooks/stop.sh"
 cp "$REPO_DIR/hooks/pre-compact.sh" "$CLAUDE_DIR/hooks/pre-compact.sh"
 cp "$REPO_DIR/hooks/post-tool-use-failure.sh" "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"
 cp "$REPO_DIR/hooks/post-tool-use.sh" "$CLAUDE_DIR/hooks/post-tool-use.sh"
@@ -108,7 +107,6 @@ cp "$REPO_DIR/hooks/lib/brain-context.sh" "$CLAUDE_DIR/hooks/lib/brain-context.s
 chmod +x "$CLAUDE_DIR/hooks/"*.sh
 
 echo "  + session-start.sh deployed"
-echo "  + stop.sh deployed"
 echo "  + pre-compact.sh deployed"
 echo "  + post-tool-use-failure.sh deployed"
 echo "  + post-tool-use.sh deployed"
@@ -153,7 +151,6 @@ BRAIN_HOOKS=$(cat <<'HOOKS_EOF'
 {
   "SessionStart": [{"hooks":[{"type":"command","command":"~/.claude/hooks/session-start.sh","timeout":10}]}],
   "PreCompact": [{"hooks":[{"type":"command","command":"~/.claude/hooks/pre-compact.sh","timeout":10}]}],
-  "Stop": [{"hooks":[{"type":"command","command":"~/.claude/hooks/stop.sh","timeout":10}]}],
   "PostToolUseFailure": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use-failure.sh","timeout":10}]}],
   "PostToolUse": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use.sh","timeout":10}]}]
 }
@@ -223,7 +220,6 @@ check_file "$CLAUDE_DIR/skills/daily-note/SKILL.md"             "skills/daily-no
 check_file "$CLAUDE_DIR/skills/brain-audit/SKILL.md"            "skills/brain-audit/SKILL.md"
 check_file "$CLAUDE_DIR/skills/brain-setup/SKILL.md"            "skills/brain-setup/SKILL.md"
 check_file "$CLAUDE_DIR/hooks/session-start.sh"                 "hooks/session-start.sh"
-check_file "$CLAUDE_DIR/hooks/stop.sh"                          "hooks/stop.sh"
 check_file "$CLAUDE_DIR/hooks/pre-compact.sh"                   "hooks/pre-compact.sh"
 check_file "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"         "hooks/post-tool-use-failure.sh"
 check_file "$CLAUDE_DIR/hooks/post-tool-use.sh"                 "hooks/post-tool-use.sh"

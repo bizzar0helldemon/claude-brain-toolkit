@@ -61,7 +61,6 @@ fi
 
 if [ "$SHOULD_CAPTURE" = "false" ]; then
   # Trivial session — silent skip, no output
-  write_brain_state "idle"
   exit 0
 fi
 
@@ -70,5 +69,4 @@ brain_log_error "Stop" "Capture trigger fired (tools: $TOOL_COUNT, commits: $HAS
 REASON="Before ending this session, please run /brain-capture to preserve any useful patterns from this conversation, then briefly confirm what was captured (e.g., 'Brain captured: N learnings') and then you can stop."
 BLOCK_JSON=$(jq -n --arg reason "$REASON" '{"decision":"block","reason":$reason}')
 emit_json "$BLOCK_JSON"
-write_brain_state "captured"
 exit 0
