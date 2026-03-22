@@ -92,7 +92,7 @@ When the user asks about past work, consult the vault context injected at sessio
 
 ## Error Pattern Recognition
 
-When a Bash command fails, the PostToolUseFailure hook checks the error against stored patterns in `$BRAIN_PATH\brain-mode\pattern-store.json`. If a match is found, the hook injects the past solution AND a tier instruction into your context via `additionalContext`.
+When a Bash command fails, the PostToolUseFailure hook checks the error against stored patterns in `$BRAIN_PATH/brain-mode/pattern-store.json`. If a match is found, the hook injects the past solution AND a tier instruction into your context via `additionalContext`.
 
 **Respond according to the tier:**
 

@@ -57,16 +57,17 @@ After setup, restart Claude Code and brain mode is active.
 
 ### Hook Architecture
 
-Brain mode uses 6 Claude Code hook events:
+Brain mode uses 5 globally-deployed hook events:
 
 | Hook | Event | What It Does |
 |------|-------|-------------|
 | `session-start.sh` | SessionStart | Loads vault context into Claude's context window. Caches for fast `/clear` reloads. |
-| `stop.sh` | Stop | Evaluates session for capturable content. Only triggers capture for sessions with file changes or git commits. |
 | `pre-compact.sh` | PreCompact | Triggers capture before context window compaction. |
 | `post-tool-use.sh` | PostToolUse | Detects git commits and suggests capture. |
 | `post-tool-use-failure.sh` | PostToolUseFailure | Matches errors against stored patterns and surfaces past solutions with adaptive tier responses. |
 | `notification-idle.sh` | Notification (idle) | Offers to capture when the session has content and the user pauses. One offer per session. |
+
+A `stop.sh` hook is also included in the repo for project-level use (smart capture detection at session end) but is not deployed globally to avoid interfering with `/clear`.
 
 ### Shared Libraries
 
@@ -152,11 +153,11 @@ claude-brain-toolkit/
     brain-mode.md           # Agent definition (deployed to ~/.claude/agents/)
   hooks/
     session-start.sh        # SessionStart hook
-    stop.sh                 # Stop hook (smart capture detection)
     pre-compact.sh          # PreCompact hook
     post-tool-use.sh        # PostToolUse hook (git commit detection)
     post-tool-use-failure.sh # PostToolUseFailure hook (error patterns)
     notification-idle.sh    # Notification hook (idle capture offer)
+    stop.sh                 # Stop hook (project-level, not globally deployed)
     lib/
       brain-path.sh         # Shared utilities
       brain-context.sh      # Vault context builder
@@ -173,6 +174,9 @@ claude-brain-toolkit/
     setup.sh                # Automated installer
     skills/
       brain-setup/          # /brain-setup onboarding wizard
+      changelog-generator/  # Changelog generation skill
+      simplification-cascades/ # Code simplification skill
+      systematic-debugging/ # Structured debugging skill
   settings.json             # Template settings (merged into user's settings)
   statusline.sh             # Statusline display script
   frameworks/               # AI Fluency Framework reference

@@ -6,11 +6,21 @@ intake/discoveries/*.md
 people/*.md
 IDENTITY.md
 
+# Vault template directories (scaffolding — not part of the toolkit)
+portfolio/
+archive/
+
 # Keep template/index files tracked
 !projects/_INDEX.md
 !creative/_INDEX.md
 !intake/_INDEX.md
 !prompts/_INDEX.md
+
+# Internal development planning (GSD phase plans, research, state)
+.planning/
+
+# Personal dev skills (not part of the toolkit distribution)
+.claude/skills/
 
 # Local dev overrides (never ship to users)
 CLAUDE.local.md

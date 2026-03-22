@@ -918,7 +918,7 @@ These are auto-created by Claude Code as you work — **no need to copy them**. 
 
 Additional MEMORY.md files exist within some projects themselves:
 - `L:\Memphis_Cursed_Rap\docs\MEMORY.md`
-- `C:\Users\srco1\Desktop\Projects\YesterdaysWeekendWorkspace\FuckMeFundMeFeedMe\docs\MEMORY.md`
+- `C:\Users\<username>\Desktop\Projects\<ProjectName>\docs\MEMORY.md`
 
 ---
 
@@ -977,4 +977,4 @@ Fastest path to a fully working Claude Code environment on a new machine:
 
 ---
 
-*Generated from the live environment on machine `srco1` — 2026-02-28*
+*Generated from a live environment — 2026-02-28*
