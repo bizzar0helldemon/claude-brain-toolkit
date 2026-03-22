@@ -1,244 +1,193 @@
 # Claude Brain Toolkit
 
-A personal knowledge hub powered by [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills. Capture who you are, catalog your projects, extract what works, and build a brain that grows with you.
+A persistent knowledge layer for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Brain mode gives Claude memory across sessions — it loads your past context at startup, captures what you learn as you work, and surfaces relevant knowledge when you need it. No manual commands required.
 
-## What This Is
+## What It Does
 
-Claude Brain is an Obsidian-compatible vault paired with 6 Claude Code slash commands. Together, they give Claude persistent knowledge about you — your projects, your working style, your effective prompts, and your creative history. Instead of starting every conversation from scratch, Claude can reference your brain and pick up where you left off.
+Without brain mode, every Claude Code session starts from zero. With it:
 
-The toolkit is grounded in the [AI Fluency Framework](frameworks/ai-fluency-framework.md) — a set of four competencies (Delegation, Description, Discernment, Diligence) for working effectively, efficiently, ethically, and safely with AI.
+- **Session start:** Hooks automatically load your vault context — projects, pitfalls, patterns — into Claude's context window
+- **While you work:** Error pattern recognition surfaces past solutions when you hit a known error. Git commits are detected for potential capture.
+- **When you pause:** An idle detection hook gently offers to capture useful patterns from the session
+- **Session end:** A smart stop hook evaluates whether the session produced something worth capturing, and only triggers when it did
+- **Statusline:** Shows brain state at a glance — idle, captured, or error
 
-## New: Claude Desktop Skill + Onboarding Kit
-
-**Don't use the terminal?** No problem. The **Brain Assistant** is a Claude Desktop skill that gives you brain powers without the CLI:
-
-1. Download `desktop-skill/` from this repo
-2. Zip the contents and add to a Claude Desktop project
-3. The skill detects whether you have a vault and walks you through setup
-
-**Setting up a team member?** The `onboarding-kit/` has everything needed to go from zero to a fully configured Claude Code environment — automated setup script, global skills, commands, and a step-by-step guide.
-
-See [Desktop Skill](#desktop-skill) and [Onboarding Kit](#onboarding-kit) below.
-
----
+Everything runs through Claude Code's hook system. You just work normally.
 
 ## Quick Start
 
-### 1. Clone the repo
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (for Claude Code)
+- [Git](https://git-scm.com/)
+- [jq](https://jqlang.github.io/jq/download/) (JSON processing)
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`)
+
+### Install
 
 ```bash
 git clone https://github.com/bizzar0helldemon/claude-brain-toolkit.git
-```
-
-### 2. Install global skills
-
-Two skills (`/brain-capture` and `/daily-note`) need to work from any project, not just the brain vault. Copy them to your global skills directory:
-
-```bash
-cp -r claude-brain-toolkit/global-skills/* ~/.claude/skills/
-```
-
-### 3. Set your brain path
-
-Replace `{{SET_YOUR_BRAIN_PATH}}` with your actual brain path in two files:
-
-- `~/.claude/skills/brain-capture/SKILL.md`
-- `~/.claude/skills/daily-note/SKILL.md`
-
-For example, if you cloned to `~/claude-brain-toolkit`, replace all instances of `{{SET_YOUR_BRAIN_PATH}}` with `~/claude-brain-toolkit`.
-
-### 4. Start building your brain
-
-```bash
 cd claude-brain-toolkit
-claude
+bash onboarding-kit/setup.sh
 ```
 
-Then run:
+The setup script:
+1. Deploys the `brain-mode` agent to `~/.claude/agents/`
+2. Installs global skills (`/brain-capture`, `/daily-note`, `/brain-audit`, `/brain-setup`)
+3. Deploys all hook scripts to `~/.claude/hooks/`
+4. Registers hooks in `~/.claude/settings.json` (idempotent — safe to re-run)
+5. Deploys slash commands (`/brain-add-pattern`, `/brain-relocate`)
+6. Deploys the statusline script
+7. Verifies everything is in place
 
+### First Run
+
+```bash
+claude --agent brain-mode
 ```
-/brain-intake
-```
 
-Claude will start a guided interview to learn about you. Your first session might cover your career, your creative work, or what you're currently building.
+On first run, `BRAIN_PATH` won't be set yet. Claude will detect this and offer to run `/brain-setup`, which walks you through:
+- Choosing a vault directory
+- Creating the directory structure
+- Setting `BRAIN_PATH` in your shell profile and `settings.json`
 
-## Skills Reference
+After setup, restart Claude Code and brain mode is active.
+
+## How It Works
+
+### Hook Architecture
+
+Brain mode uses 6 Claude Code hook events:
+
+| Hook | Event | What It Does |
+|------|-------|-------------|
+| `session-start.sh` | SessionStart | Loads vault context into Claude's context window. Caches for fast `/clear` reloads. |
+| `stop.sh` | Stop | Evaluates session for capturable content. Only triggers capture for sessions with file changes or git commits. |
+| `pre-compact.sh` | PreCompact | Triggers capture before context window compaction. |
+| `post-tool-use.sh` | PostToolUse | Detects git commits and suggests capture. |
+| `post-tool-use-failure.sh` | PostToolUseFailure | Matches errors against stored patterns and surfaces past solutions with adaptive tier responses. |
+| `notification-idle.sh` | Notification (idle) | Offers to capture when the session has content and the user pauses. One offer per session. |
+
+### Shared Libraries
+
+| Library | Provides |
+|---------|----------|
+| `brain-path.sh` | `brain_path_validate`, `emit_json`, `brain_log_error`, `has_capturable_content`, `write_brain_state`, pattern store functions |
+| `brain-context.sh` | `build_brain_context`, `build_summary_block`, vault scanning, token budget enforcement |
+
+### Error Pattern Intelligence
+
+When a command fails, the `PostToolUseFailure` hook checks your pattern store (`$BRAIN_PATH/brain-mode/pattern-store.json`) for matches. Responses adapt based on how many times you've seen the error:
+
+| Encounters | Response |
+|-----------|----------|
+| 1st time | Full explanation with solution steps |
+| 2-4 times | Brief reminder |
+| 5+ times | Root cause investigation flag |
+
+Add patterns with `/brain-add-pattern` after solving a recurring error, or let Claude suggest it when it notices you fixing the same thing repeatedly.
+
+### Statusline
+
+The statusline shows brain state at a glance in your Claude Code terminal:
+
+| State | Display | Meaning |
+|-------|---------|---------|
+| Idle | brain emoji | Brain active, no recent hook activity |
+| Captured | green + brain emoji | Capture ran successfully |
+| Error | red + brain emoji | A hook error or degraded state |
+
+## Commands
 
 | Command | What It Does |
 |---------|-------------|
-| `/brain-intake [topic]` | Guided interview to capture personal knowledge — career, creative work, values, communication preferences |
-| `/brain-scan [path]` | Scan a project directory and catalog it into the brain with a structured summary |
-| `/brain-discover [path]` | Scan a drive or directory for creative content not yet captured in the brain |
-| `/brain-update [name]` | Update an existing project entry after doing more work on it |
-| `/brain-capture [hint]` | Extract effective prompts and interaction patterns from the current conversation |
-| `/daily-note [content]` | Log a journal entry to today's daily note |
-
-### Usage Examples
-
-```
-/brain-intake career          # Interview about your professional history
-/brain-intake creative        # Interview about your creative work and influences
-/brain-scan ~/Projects/my-app # Catalog a project into the brain
-/brain-discover ~/Documents   # Find creative content not yet in the brain
-/brain-update my-app          # Update a project entry after new work
-/brain-capture                # Extract patterns from the current conversation
-/brain-capture that debug approach  # Focus on a specific technique
-/daily-note Fixed the auth bug     # Quick journal entry
-```
+| `/brain-capture` | Extract patterns, prompts, and lessons from the current conversation |
+| `/daily-note` | Log a journal entry to `daily_notes/` |
+| `/brain-audit` | Run a vault health check (stale entries, missing indexes, broken links) |
+| `/brain-add-pattern` | Add an error pattern and solution to the pattern store |
+| `/brain-relocate` | Move your vault to a new path (updates settings.json and shell profile) |
+| `/brain-setup` | First-time onboarding wizard |
 
 ## Vault Structure
 
+Your vault lives at `$BRAIN_PATH` — wherever you choose during setup. The toolkit creates and uses:
+
+```
+$BRAIN_PATH/
+  brain-mode/
+    pattern-store.json     # Error patterns and solutions
+    capture-YYYY-MM-DD.md  # Session captures
+  daily_notes/
+    YYYY-MM-DD.md          # Daily journal entries
+  projects/                # Project summaries
+  prompts/                 # Prompt and pattern library
+  .brain-state             # Current hook state (idle/captured/error)
+  .brain-cached-context.json  # Cached context for fast /clear
+  .brain-errors.log        # Hook error log
+```
+
+The vault is Obsidian-compatible but doesn't require Obsidian. Wiki links (`[[Project Name]]`) resolve between documents, and frontmatter tags are searchable.
+
+## Configuration
+
+Brain mode needs one environment variable:
+
+```bash
+export BRAIN_PATH="/path/to/your/vault"
+```
+
+This is set in two places (both are needed):
+1. **Shell profile** (`~/.bashrc`, `~/.zshrc`, or `~/.bash_profile`) — for interactive terminal use
+2. **`~/.claude/settings.json`** under `"env"` — for hook subprocesses (which don't load shell profiles)
+
+The `/brain-setup` wizard handles both. If you need to move your vault later, `/brain-relocate` updates both locations.
+
+## Project Structure
+
+This repo is the toolkit source — what gets deployed to `~/.claude/` via `setup.sh`:
+
 ```
 claude-brain-toolkit/
-├── .claude/skills/        # Project-scoped skills (work when brain is open)
-├── global-skills/         # Copy these to ~/.claude/skills/ during setup
-├── frameworks/            # AI Fluency Framework + governance policy template
-├── prompts/               # Prompt & pattern library (organized by domain)
-├── projects/              # Project summaries cataloged by /brain-scan
-├── creative/              # Creative works, writing, art, music concepts
-├── intake/                # Interview sessions from /brain-intake
-├── portfolio/             # Tech skills, services, project portfolio
-├── daily_notes/           # Journal entries from /daily-note
-├── people/                # Notes about collaborators and contacts
-├── archive/               # Raw CLAUDE.md backups from scanned projects
-├── IDENTITY.md            # Your personal profile (built via /brain-intake)
-├── CLAUDE.md              # Hub document + configuration
-├── brain-scan-templates.md # Canonical templates for all document types
-├── desktop-skill/         # Brain Assistant skill for Claude Desktop
-└── onboarding-kit/        # Full setup package for new users
+  agents/
+    brain-mode.md           # Agent definition (deployed to ~/.claude/agents/)
+  hooks/
+    session-start.sh        # SessionStart hook
+    stop.sh                 # Stop hook (smart capture detection)
+    pre-compact.sh          # PreCompact hook
+    post-tool-use.sh        # PostToolUse hook (git commit detection)
+    post-tool-use-failure.sh # PostToolUseFailure hook (error patterns)
+    notification-idle.sh    # Notification hook (idle capture offer)
+    lib/
+      brain-path.sh         # Shared utilities
+      brain-context.sh      # Vault context builder
+    tests/
+      test-stop-signals.sh  # Signal detection tests
+  commands/
+    brain-add-pattern.md    # /brain-add-pattern slash command
+    brain-relocate.md       # /brain-relocate slash command
+  global-skills/
+    brain-capture/          # /brain-capture skill
+    brain-audit/            # /brain-audit skill
+    daily-note/             # /daily-note skill
+  onboarding-kit/
+    setup.sh                # Automated installer
+    skills/
+      brain-setup/          # /brain-setup onboarding wizard
+  settings.json             # Template settings (merged into user's settings)
+  statusline.sh             # Statusline display script
+  frameworks/               # AI Fluency Framework reference
+  desktop-skill/            # Brain Assistant for Claude Desktop (experimental)
 ```
 
-### What Goes Where
+## Developing
 
-| Directory | Populated By | Contains |
-|-----------|-------------|---------|
-| `projects/` | `/brain-scan` | Structured summaries of your dev/creative projects |
-| `creative/` | `/brain-intake`, `/brain-discover` | Creative works, writing, art concepts |
-| `intake/` | `/brain-intake` | Session transcripts and discovery logs |
-| `prompts/` | `/brain-capture` | Effective prompt templates organized by domain |
-| `daily_notes/` | `/daily-note` | Journal entries, session summaries, insights |
-| `portfolio/` | `/brain-scan`, manual | Career materials — skills, services, project portfolio |
-| `people/` | `/brain-intake`, manual | Notes about collaborators and contacts |
-| `frameworks/` | Manual | Reference frameworks and governance docs |
+If you're working on the toolkit itself:
 
-## Obsidian Integration
+1. Clone the repo
+2. Create a `CLAUDE.local.md` (gitignored) with your real `BRAIN_PATH` so brain mode works during development
+3. Run `bash onboarding-kit/setup.sh` after changes to deploy to `~/.claude/`
 
-This vault is designed to work with [Obsidian](https://obsidian.md/) but doesn't require it. If you use Obsidian:
-
-- Open the `claude-brain-toolkit` directory as an Obsidian vault
-- Wiki links (`[[Project Name]]`) will resolve between documents
-- Frontmatter tags are searchable via Obsidian's tag panel
-- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) queries can filter by `type`, `status`, `tags`, etc.
-
-### Linking Conventions
-
-- **People:** `[[First Last]]` or `[[Nickname]]`
-- **Projects:** `[[Project Name]]` matching the frontmatter `title:`
-- **Groups:** `[[Group Name]]`
-- **Tags:** kebab-case in frontmatter arrays (e.g., `tags: [project, web-dev]`)
-- **File names:** kebab-case (e.g., `my-project-name.md`)
-
-## Customization
-
-### Adding Your Own Domains
-
-The prompt library ships with domains like `coding/`, `writing/`, `music/`, etc. Add your own:
-
-1. Create a new subdirectory under `prompts/` (e.g., `prompts/data-science/`)
-2. The `/brain-capture` skill will detect it automatically
-
-### Adding Templates
-
-All document templates live in `brain-scan-templates.md`. To add a new type:
-
-1. Add a template section to `brain-scan-templates.md`
-2. Define the frontmatter fields and section structure
-3. Reference it in the relevant skill's instructions
-
-### Customizing Intake Topics
-
-The `/brain-intake` skill has default topic areas (life story, career, creative work, etc.). To add your own:
-
-1. Edit `.claude/skills/brain-intake/SKILL.md`
-2. Add your topic to the list in the "Topic Areas" section
-3. Add routing rules in the "Integrate Into Brain" section
-
-## The AI Fluency Framework
-
-This toolkit is built on the Framework for AI Fluency by Dakan & Feller — four competencies for effective AI interaction:
-
-| Competency | What It Means |
-|-----------|--------------|
-| **Delegation** | Deciding what work belongs to you, to AI, or to both |
-| **Description** | Communicating effectively — prompts, constraints, role definition |
-| **Discernment** | Critically evaluating AI output — never accepting at face value |
-| **Diligence** | Taking full responsibility for AI-assisted work |
-
-See [frameworks/ai-fluency-framework.md](frameworks/ai-fluency-framework.md) for the full reference, and [frameworks/ai-governance-policy.md](frameworks/ai-governance-policy.md) for a template to define your own AI governance standards.
-
-## Desktop Skill
-
-The **Brain Assistant** (`desktop-skill/`) is a Claude Desktop skill that makes the brain vault accessible without the CLI. It includes:
-
-- **SKILL.md** — Conversation flow, intent detection, bootstrap/onboarding, CLI nudges
-- **BRAIN_REFERENCE.md** — Vault structure, file formats, frontmatter specs, CLI command mapping
-
-### What It Does
-
-| Mode | Trigger | Behavior |
-|------|---------|----------|
-| **Bootstrap** | No vault attached | Asks "comfortable with a terminal?" → CLI setup path or Desktop-first scaffold |
-| **Explore** | Questions about your vault | Searches project knowledge and answers |
-| **Draft** | "Log this", "write a case study" | Generates vault-formatted content as downloadable artifacts |
-| **Think** | "Help me brainstorm", "prep me for" | Uses brain context for strategic conversation |
-| **Educate** | "What's GSD?", "set up CLI" | Introduces CLI commands gradually |
-
-### Setup
-
-1. Download the `desktop-skill/` directory
-2. Zip `SKILL.md` and `BRAIN_REFERENCE.md` together
-3. In Claude Desktop, create a project and add the zip as a skill (or add both files as project knowledge)
-4. Add your vault's `CLAUDE.md` to the same project for full brain access
-
-The skill gradually introduces CLI equivalents — after using Desktop for a while, the terminal commands will feel familiar.
-
----
-
-## Onboarding Kit
-
-The `onboarding-kit/` directory contains everything needed to set up a new user with the full Claude Code + Brain environment.
-
-### What's Included
-
-| File | Purpose |
-|------|---------|
-| `setup.sh` | Automated setup script — installs GSD, superpowers, skills, clones vault |
-| `SETUP_INSTRUCTIONS.md` | Master guide — feed to Claude Desktop and it walks the user through everything |
-| `skills/` | 5 global CLI skills ready to copy to `~/.claude/skills/` |
-| `commands/brain/scan.md` | The `/brain:scan` command for full filesystem scanning |
-| `CLAUDE_DESKTOP_SETUP.md` | How to connect Desktop and CLI to the same vault |
-| `CLAUDE_CODE_SETUP_GUIDE_REFERENCE.md` | Full technical reference for the environment |
-
-### Two Setup Paths
-
-**Automated (for terminal users):**
-```bash
-cd onboarding-kit
-bash setup.sh
-```
-
-**Guided (via Claude Desktop):**
-1. Add `SETUP_INSTRUCTIONS.md` to a Claude Desktop project
-2. Tell Claude "set me up"
-3. Follow the step-by-step walkthrough
-
-Both paths end at the same place: a fully configured Claude Code CLI with a personal brain vault.
-
----
-
-## Optional: Obsidian CLI
-
-For power users, [obsidian-cli](https://github.com/jwhonce/obsidian-cli) provides command-line access to your vault. It's not required — all skills work without it.
+Changes to hook scripts in the repo don't take effect until deployed — the running hooks are the copies in `~/.claude/hooks/`.
 
 ## License
 
