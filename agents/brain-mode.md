@@ -126,3 +126,4 @@ These slash commands are available in brain-mode sessions:
 - `/brain-audit` — Run a vault health check (stale entries, missing indexes, broken links)
 - `/brain-add-pattern` -- Add an error pattern and its solution to the pattern store for automatic future recognition
 - `/brain-setup` — First-time onboarding wizard: configure BRAIN_PATH and create the vault directory
+- `/brain-relocate` — Move your vault to a new location: updates BRAIN_PATH in settings.json and shell profile

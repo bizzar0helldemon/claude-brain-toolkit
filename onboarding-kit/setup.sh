@@ -129,7 +129,9 @@ echo "[5b/9] Deploying slash commands..."
 
 mkdir -p "$CLAUDE_DIR/commands/brain"
 cp "$REPO_DIR/commands/brain-add-pattern.md" "$CLAUDE_DIR/commands/brain/brain-add-pattern.md"
+cp "$REPO_DIR/commands/brain-relocate.md" "$CLAUDE_DIR/commands/brain/brain-relocate.md"
 echo "  + brain-add-pattern.md deployed to $CLAUDE_DIR/commands/brain/"
+echo "  + brain-relocate.md deployed to $CLAUDE_DIR/commands/brain/"
 
 echo ""
 
@@ -227,6 +229,7 @@ check_file "$CLAUDE_DIR/hooks/lib/brain-path.sh"                "hooks/lib/brain
 check_file "$CLAUDE_DIR/hooks/lib/brain-context.sh"             "hooks/lib/brain-context.sh"
 check_file "$CLAUDE_DIR/statusline.sh"                          "statusline.sh"
 check_file "$CLAUDE_DIR/commands/brain/brain-add-pattern.md"    "commands/brain/brain-add-pattern.md"
+check_file "$CLAUDE_DIR/commands/brain/brain-relocate.md"      "commands/brain/brain-relocate.md"
 
 # Check settings.json contains brain hooks
 if jq '.hooks.SessionStart' "$SETTINGS" 2>/dev/null | grep -q "session-start.sh"; then
