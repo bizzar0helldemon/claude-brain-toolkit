@@ -51,6 +51,18 @@
           }
         ]
       }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notification-idle.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

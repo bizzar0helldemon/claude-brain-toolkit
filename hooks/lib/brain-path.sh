@@ -1,7 +1,7 @@
 # hooks/lib/brain-path.sh
 # Sourced library — do NOT execute directly. Source with: source hooks/lib/brain-path.sh
 #
-# Provides: brain_path_validate, brain_log_error, emit_json, write_brain_state
+# Provides: brain_path_validate, brain_log_error, emit_json, has_capturable_content, write_brain_state
 # Compatible with: bash 3.2+, zsh 5.0+
 # All output uses printf (not echo) for portability.
 
@@ -268,6 +268,59 @@ prune_pattern_store() {
   fi
 
   return 0
+}
+
+# ------------------------------------------------------------------------------
+# has_capturable_content <transcript_path>
+#
+# Analyzes a session transcript to determine if it contains content worth
+# capturing. Sets side-effect variables: TOOL_COUNT, HAS_GIT_COMMIT,
+# HAS_FILE_CHANGES for use by callers in log messages.
+#
+# Args:
+#   $1 — path to transcript file
+#
+# Return codes: 0 = capturable content exists, 1 = no capturable content
+# ------------------------------------------------------------------------------
+has_capturable_content() {
+  local transcript_path="$1"
+
+  TOOL_COUNT=0
+  HAS_GIT_COMMIT=0
+  HAS_FILE_CHANGES=0
+
+  if [ -z "$transcript_path" ] || [ ! -f "$transcript_path" ]; then
+    return 1
+  fi
+
+  TOOL_COUNT=$(jq -r '
+    select(.type == "assistant") |
+    .message.content[]? |
+    select(.type == "tool_use") |
+    .name
+  ' "$transcript_path" 2>/dev/null | wc -l | tr -d ' ')
+
+  HAS_GIT_COMMIT=$(jq -r '
+    select(.type == "assistant") |
+    .message.content[]? |
+    select(.type == "tool_use") |
+    select(.name == "Bash") |
+    .input.command // ""
+  ' "$transcript_path" 2>/dev/null | grep -c 'git commit' || echo 0)
+
+  HAS_FILE_CHANGES=$(jq -r '
+    select(.type == "assistant") |
+    .message.content[]? |
+    select(.type == "tool_use") |
+    select(.name == "Write" or .name == "Edit") |
+    .name
+  ' "$transcript_path" 2>/dev/null | wc -l | tr -d ' ')
+
+  if [ "$HAS_FILE_CHANGES" -gt 0 ] || [ "$HAS_GIT_COMMIT" -gt 0 ]; then
+    return 0
+  fi
+
+  return 1
 }
 
 # ------------------------------------------------------------------------------

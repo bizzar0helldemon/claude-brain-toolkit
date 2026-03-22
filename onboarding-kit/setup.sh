@@ -100,6 +100,7 @@ cp "$REPO_DIR/hooks/session-start.sh" "$CLAUDE_DIR/hooks/session-start.sh"
 cp "$REPO_DIR/hooks/pre-compact.sh" "$CLAUDE_DIR/hooks/pre-compact.sh"
 cp "$REPO_DIR/hooks/post-tool-use-failure.sh" "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"
 cp "$REPO_DIR/hooks/post-tool-use.sh" "$CLAUDE_DIR/hooks/post-tool-use.sh"
+cp "$REPO_DIR/hooks/notification-idle.sh" "$CLAUDE_DIR/hooks/notification-idle.sh"
 
 cp "$REPO_DIR/hooks/lib/brain-path.sh" "$CLAUDE_DIR/hooks/lib/brain-path.sh"
 cp "$REPO_DIR/hooks/lib/brain-context.sh" "$CLAUDE_DIR/hooks/lib/brain-context.sh"
@@ -110,6 +111,7 @@ echo "  + session-start.sh deployed"
 echo "  + pre-compact.sh deployed"
 echo "  + post-tool-use-failure.sh deployed"
 echo "  + post-tool-use.sh deployed"
+echo "  + notification-idle.sh deployed"
 echo "  + lib/brain-path.sh deployed"
 echo "  + lib/brain-context.sh deployed"
 
@@ -154,7 +156,8 @@ BRAIN_HOOKS=$(cat <<'HOOKS_EOF'
   "SessionStart": [{"hooks":[{"type":"command","command":"~/.claude/hooks/session-start.sh","timeout":10}]}],
   "PreCompact": [{"hooks":[{"type":"command","command":"~/.claude/hooks/pre-compact.sh","timeout":10}]}],
   "PostToolUseFailure": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use-failure.sh","timeout":10}]}],
-  "PostToolUse": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use.sh","timeout":10}]}]
+  "PostToolUse": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use.sh","timeout":10}]}],
+  "Notification": [{"matcher":"idle_prompt","hooks":[{"type":"command","command":"~/.claude/hooks/notification-idle.sh","timeout":10}]}]
 }
 HOOKS_EOF
 )
@@ -225,6 +228,7 @@ check_file "$CLAUDE_DIR/hooks/session-start.sh"                 "hooks/session-s
 check_file "$CLAUDE_DIR/hooks/pre-compact.sh"                   "hooks/pre-compact.sh"
 check_file "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"         "hooks/post-tool-use-failure.sh"
 check_file "$CLAUDE_DIR/hooks/post-tool-use.sh"                 "hooks/post-tool-use.sh"
+check_file "$CLAUDE_DIR/hooks/notification-idle.sh"             "hooks/notification-idle.sh"
 check_file "$CLAUDE_DIR/hooks/lib/brain-path.sh"                "hooks/lib/brain-path.sh"
 check_file "$CLAUDE_DIR/hooks/lib/brain-context.sh"             "hooks/lib/brain-context.sh"
 check_file "$CLAUDE_DIR/statusline.sh"                          "statusline.sh"
@@ -243,6 +247,13 @@ if jq '.hooks.PostToolUse' "$SETTINGS" 2>/dev/null | grep -q "post-tool-use.sh";
   echo "  + settings.json contains brain PostToolUse hook"
 else
   echo "  x settings.json missing brain PostToolUse hook"
+  PASS=false
+fi
+
+if jq '.hooks.Notification' "$SETTINGS" 2>/dev/null | grep -q "notification-idle.sh"; then
+  echo "  + settings.json contains brain Notification hook"
+else
+  echo "  x settings.json missing brain Notification hook"
   PASS=false
 fi
 

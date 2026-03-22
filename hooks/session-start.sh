@@ -7,6 +7,9 @@ if ! brain_path_validate; then
   exit 1
 fi
 
+# Reset idle-capture one-offer guard for new session
+rm -f "$BRAIN_PATH/.brain-idle-offered" 2>/dev/null
+
 # Parse hook input fields (do this EARLY so /clear fast path works)
 SOURCE=$(printf '%s' "$HOOK_INPUT" | jq -r '.source // "startup"')
 CWD=$(printf '%s' "$HOOK_INPUT" | jq -r '.cwd // ""')
