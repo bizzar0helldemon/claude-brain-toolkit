@@ -24,16 +24,16 @@ Requirements for v1.2 Polish & Intelligence. Each maps to roadmap phases.
 
 ### Intelligence Layer
 
-- [ ] **MENT-01**: Pattern store encounter_count is verified incrementing on each error match and pattern store has soft-cap pruning
-- [ ] **MENT-02**: Error pattern responses adapt based on encounter count — full explanation at first encounter, brief note at 2-4, root cause investigation flag at 5+
+- [x] **MENT-01**: Pattern store encounter_count is verified incrementing on each error match and pattern store has soft-cap pruning
+- [x] **MENT-02**: Error pattern responses adapt based on encounter count — full explanation at first encounter, brief note at 2-4, root cause investigation flag at 5+
 
 ### Vault Management
 
-- [ ] **ONBR-03**: User can relocate their vault via `/brain-relocate`, which updates BRAIN_PATH in both settings.json and shell profile with post-relocate verification
+- [x] **ONBR-03**: User can relocate their vault via `/brain-relocate`, which updates BRAIN_PATH in both settings.json and shell profile with post-relocate verification
 
 ### Session Intelligence
 
-- [ ] **LIFE-06**: Idle detection offers to capture when the session has capturable content and the user is idle, with a one-offer-per-session guard
+- [x] **LIFE-06**: Idle detection offers to capture when the session has capturable content and the user is idle, with a one-offer-per-session guard
 
 ## Future Requirements
 
@@ -66,17 +66,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STOP-03 | Phase 7 | Complete |
 | STAT-02 | Phase 8 | Complete |
 | STAT-03 | Phase 8 | Complete |
-| MENT-01 | Phase 9 | Pending |
-| MENT-02 | Phase 9 | Pending |
-| ONBR-03 | Phase 10 | Pending |
-| LIFE-06 | Phase 11 | Pending |
+| MENT-01 | Phase 9 | Complete |
+| MENT-02 | Phase 9 | Complete |
+| ONBR-03 | Phase 10 | Complete |
+| LIFE-06 | Phase 11 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 5 total — all complete
-- v1.2 requirements: 4 total — all mapped
+- v1.2 requirements: 4 total — all complete
 - Mapped to phases: 5 (v1.1) + 4 (v1.2)
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after v1.2 roadmap creation*
+*Last updated: 2026-03-21 — v1.2 complete, all requirements shipped*

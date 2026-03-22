@@ -5,34 +5,30 @@
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** The brain compounds over time — every session makes future sessions smarter by actively capturing and applying knowledge without the user having to ask.
-**Current focus:** v1.2 Polish & Intelligence
+**Current focus:** v1.2 complete — all milestones shipped
 
 ## Current Position
 
-Phase: 10 — Vault Relocation
+Phase: 11 — Idle Capture Offer
 Plan: 01 of 01 (complete)
-Status: Phase 10 complete
-Last activity: 2026-03-21 — Completed 10-01-PLAN.md (/brain-relocate slash command)
+Status: v1.2 COMPLETE — all 3 milestones shipped
 
-Progress: [██████░░░░] 67% (v1.2 — 2 of 3 phases complete)
+Progress: [██████████] 100% (v1.2 — 3 of 3 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14 (10 v1.0 + 2 v1.1 + 2 v1.2)
-- Total phases: 10 (6 v1.0 + 2 v1.1 + 2 v1.2)
+- Total plans completed: 15 (10 v1.0 + 2 v1.1 + 3 v1.2)
+- Total phases: 11 (6 v1.0 + 2 v1.1 + 3 v1.2)
 - Timeline: 3 days (2026-03-19 -> 2026-03-21)
 
-**By Phase (v1.0):**
+**Milestones:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1-4 | 2 each | ~8 plans | ~3 min |
-| 5-6 | 1 each | 2 plans | ~3 min |
-
-**Recent Trend:**
-- v1.2 velocity: stable
-- Trend: Stable
+| Milestone | Phases | Plans | Shipped |
+|-----------|--------|-------|---------|
+| v1.0 MVP | 1-6 | 10 | 2026-03-21 |
+| v1.1 Quiet Brain | 7-8 | 2 | 2026-03-21 |
+| v1.2 Polish & Intelligence | 9-11 | 3 | 2026-03-21 |
 
 ## Accumulated Context
 
@@ -60,6 +56,10 @@ Decisions logged in PROJECT.md Key Decisions table.
 - Phase 10: Re-point only by default; copy offered when old path exists and new path empty
 - Phase 10: Never mv vault — cp -r for safety, user deletes old copy manually
 - Phase 10: BRAIN_PATH unset redirects to /brain-setup (not handled inline)
+- Phase 11: Notification hook with idle_prompt matcher — native Claude Code feature, no custom timer
+- Phase 11: One-offer guard via file ($BRAIN_PATH/.brain-idle-offered), not env var (doesn't persist across hooks)
+- Phase 11: Guard written BEFORE emit to prevent race on rapid fires
+- Phase 11: Extract has_capturable_content() to shared lib — stop.sh and notification-idle.sh use identical logic
 
 ### Pending Todos
 
@@ -72,5 +72,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Phase 10 Plan 01 complete — /brain-relocate command shipped
-Resume with: `/gsd:plan-phase 11`
+Stopped at: v1.2 milestone complete — all phases shipped
+Resume with: Define v1.3 or mark project as feature-complete

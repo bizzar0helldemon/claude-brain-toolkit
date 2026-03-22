@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 Claude Brain Mode MVP** - Phases 1-6 (shipped 2026-03-21)
 - ✅ **v1.1 Quiet Brain** - Phases 7-8 (shipped 2026-03-21)
-- 🚧 **v1.2 Polish & Intelligence** - Phases 9-11 (in progress)
+- ✅ **v1.2 Polish & Intelligence** - Phases 9-11 (shipped 2026-03-21)
 
 ## Phases
 
@@ -96,7 +96,7 @@ Plans:
 
 </details>
 
-### 🚧 v1.2 Polish & Intelligence (In Progress)
+### ✅ v1.2 Polish & Intelligence (Shipped 2026-03-21)
 
 **Milestone Goal:** Make brain mode smarter and more manageable — adaptive error intelligence, vault portability, and ambient session awareness.
 
@@ -141,7 +141,7 @@ Plans:
   4. The offer fires via the idle hook without blocking or slowing down the session
 
 Plans:
-- [ ] 11-01-PLAN.md — Shared content detection, notification-idle.sh hook, one-offer guard, deployment
+- [x] 11-01-PLAN.md — Shared content detection, notification-idle.sh hook, one-offer guard, deployment
 
 ## Progress
 
@@ -159,4 +159,4 @@ Plans:
 | 8. Statusline States | v1.1 | 1/1 | Complete | 2026-03-21 |
 | 9. Error Pattern Intelligence | v1.2 | 1/1 | Complete | 2026-03-21 |
 | 10. Vault Relocation | v1.2 | 1/1 | Complete | 2026-03-21 |
-| 11. Idle Capture Offer | v1.2 | 0/1 | Planned | — |
+| 11. Idle Capture Offer | v1.2 | 1/1 | Complete | 2026-03-21 |
