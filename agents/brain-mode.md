@@ -127,3 +127,8 @@ These slash commands are available in brain-mode sessions:
 - `/brain-add-pattern` -- Add an error pattern and its solution to the pattern store for automatic future recognition
 - `/brain-setup` — First-time onboarding wizard: configure BRAIN_PATH and create the vault directory
 - `/brain-relocate` — Move your vault to a new location: updates BRAIN_PATH in settings.json and shell profile
+- `/brain-evolve` — Self-improvement cycle: audit vault and toolkit with parallel agents, score findings on 5 axes, review proposals inline
+- `/session-guardian` — Check session health: context usage, read/write ratio, risk assessment
+- `/daily-sync` — Fast operational snapshot: vault health, git state, drift detection, priorities
+- `/pre-pr-scan` — Multi-agent quality gate: CI compliance, security, logic bugs, commit hygiene
+- `/vault-documenter` — Auto-extract learnings from completed work into the vault
