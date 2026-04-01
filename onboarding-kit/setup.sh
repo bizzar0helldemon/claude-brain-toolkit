@@ -87,7 +87,12 @@ for SKILL_FILE in \
   "$CLAUDE_DIR/skills/brain-linear-sync/SKILL.md" \
   "$CLAUDE_DIR/skills/brain-handoff/SKILL.md" \
   "$CLAUDE_DIR/skills/brain-graduate/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-investigate/SKILL.md"; do
+  "$CLAUDE_DIR/skills/brain-investigate/SKILL.md" \
+  "$CLAUDE_DIR/skills/brain-evolve/SKILL.md" \
+  "$CLAUDE_DIR/skills/session-guardian/SKILL.md" \
+  "$CLAUDE_DIR/skills/daily-sync/SKILL.md" \
+  "$CLAUDE_DIR/skills/pre-pr-scan/SKILL.md" \
+  "$CLAUDE_DIR/skills/vault-documenter/SKILL.md"; do
   if [ -f "$SKILL_FILE" ]; then
     sed "s|{{SET_YOUR_BRAIN_PATH}}|\$BRAIN_PATH|g" "$SKILL_FILE" > "$SKILL_FILE.tmp" && mv "$SKILL_FILE.tmp" "$SKILL_FILE"
   fi
@@ -108,6 +113,12 @@ cp "$REPO_DIR/hooks/post-tool-use-failure.sh" "$CLAUDE_DIR/hooks/post-tool-use-f
 cp "$REPO_DIR/hooks/post-tool-use.sh" "$CLAUDE_DIR/hooks/post-tool-use.sh"
 cp "$REPO_DIR/hooks/notification-idle.sh" "$CLAUDE_DIR/hooks/notification-idle.sh"
 
+# v1.3 hooks — safety, session intelligence, loop detection
+cp "$REPO_DIR/hooks/risk-classifier.sh" "$CLAUDE_DIR/hooks/risk-classifier.sh"
+cp "$REPO_DIR/hooks/pre-commit-secrets.sh" "$CLAUDE_DIR/hooks/pre-commit-secrets.sh"
+cp "$REPO_DIR/hooks/loop-detector.sh" "$CLAUDE_DIR/hooks/loop-detector.sh"
+cp "$REPO_DIR/hooks/session-guardian.sh" "$CLAUDE_DIR/hooks/session-guardian.sh"
+
 cp "$REPO_DIR/hooks/lib/brain-path.sh" "$CLAUDE_DIR/hooks/lib/brain-path.sh"
 cp "$REPO_DIR/hooks/lib/brain-context.sh" "$CLAUDE_DIR/hooks/lib/brain-context.sh"
 
@@ -118,6 +129,10 @@ echo "  + pre-compact.sh deployed"
 echo "  + post-tool-use-failure.sh deployed"
 echo "  + post-tool-use.sh deployed"
 echo "  + notification-idle.sh deployed"
+echo "  + risk-classifier.sh deployed"
+echo "  + pre-commit-secrets.sh deployed"
+echo "  + loop-detector.sh deployed"
+echo "  + session-guardian.sh deployed"
 echo "  + lib/brain-path.sh deployed"
 echo "  + lib/brain-context.sh deployed"
 
@@ -159,10 +174,18 @@ TEMP="$SETTINGS.tmp"
 # Brain hooks object to merge in
 BRAIN_HOOKS=$(cat <<'HOOKS_EOF'
 {
+  "PreToolUse": [
+    {"hooks":[{"type":"command","command":"~/.claude/hooks/risk-classifier.sh","timeout":5}]},
+    {"hooks":[{"type":"command","command":"~/.claude/hooks/pre-commit-secrets.sh","timeout":5}]},
+    {"hooks":[{"type":"command","command":"~/.claude/hooks/loop-detector.sh","timeout":5}]}
+  ],
   "SessionStart": [{"hooks":[{"type":"command","command":"~/.claude/hooks/session-start.sh","timeout":10}]}],
   "PreCompact": [{"hooks":[{"type":"command","command":"~/.claude/hooks/pre-compact.sh","timeout":10}]}],
   "PostToolUseFailure": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use-failure.sh","timeout":10}]}],
-  "PostToolUse": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use.sh","timeout":10}]}],
+  "PostToolUse": [
+    {"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use.sh","timeout":10}]},
+    {"hooks":[{"type":"command","command":"~/.claude/hooks/session-guardian.sh","timeout":5}]}
+  ],
   "Notification": [{"matcher":"idle_prompt","hooks":[{"type":"command","command":"~/.claude/hooks/notification-idle.sh","timeout":10}]}]
 }
 HOOKS_EOF
@@ -236,11 +259,20 @@ check_file "$CLAUDE_DIR/skills/brain-linear-sync/SKILL.md"     "skills/brain-lin
 check_file "$CLAUDE_DIR/skills/brain-handoff/SKILL.md"         "skills/brain-handoff/SKILL.md"
 check_file "$CLAUDE_DIR/skills/brain-graduate/SKILL.md"        "skills/brain-graduate/SKILL.md"
 check_file "$CLAUDE_DIR/skills/brain-investigate/SKILL.md"     "skills/brain-investigate/SKILL.md"
+check_file "$CLAUDE_DIR/skills/brain-evolve/SKILL.md"          "skills/brain-evolve/SKILL.md"
+check_file "$CLAUDE_DIR/skills/session-guardian/SKILL.md"      "skills/session-guardian/SKILL.md"
+check_file "$CLAUDE_DIR/skills/daily-sync/SKILL.md"            "skills/daily-sync/SKILL.md"
+check_file "$CLAUDE_DIR/skills/pre-pr-scan/SKILL.md"           "skills/pre-pr-scan/SKILL.md"
+check_file "$CLAUDE_DIR/skills/vault-documenter/SKILL.md"      "skills/vault-documenter/SKILL.md"
 check_file "$CLAUDE_DIR/hooks/session-start.sh"                 "hooks/session-start.sh"
 check_file "$CLAUDE_DIR/hooks/pre-compact.sh"                   "hooks/pre-compact.sh"
 check_file "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"         "hooks/post-tool-use-failure.sh"
 check_file "$CLAUDE_DIR/hooks/post-tool-use.sh"                 "hooks/post-tool-use.sh"
 check_file "$CLAUDE_DIR/hooks/notification-idle.sh"             "hooks/notification-idle.sh"
+check_file "$CLAUDE_DIR/hooks/risk-classifier.sh"               "hooks/risk-classifier.sh"
+check_file "$CLAUDE_DIR/hooks/pre-commit-secrets.sh"            "hooks/pre-commit-secrets.sh"
+check_file "$CLAUDE_DIR/hooks/loop-detector.sh"                 "hooks/loop-detector.sh"
+check_file "$CLAUDE_DIR/hooks/session-guardian.sh"              "hooks/session-guardian.sh"
 check_file "$CLAUDE_DIR/hooks/lib/brain-path.sh"                "hooks/lib/brain-path.sh"
 check_file "$CLAUDE_DIR/hooks/lib/brain-context.sh"             "hooks/lib/brain-context.sh"
 check_file "$CLAUDE_DIR/statusline.sh"                          "statusline.sh"
@@ -266,6 +298,13 @@ if jq '.hooks.Notification' "$SETTINGS" 2>/dev/null | grep -q "notification-idle
   echo "  + settings.json contains brain Notification hook"
 else
   echo "  x settings.json missing brain Notification hook"
+  PASS=false
+fi
+
+if jq '.hooks.PreToolUse' "$SETTINGS" 2>/dev/null | grep -q "risk-classifier.sh"; then
+  echo "  + settings.json contains brain PreToolUse hooks"
+else
+  echo "  x settings.json missing brain PreToolUse hooks"
   PASS=false
 fi
 
