@@ -81,7 +81,13 @@ done
 for SKILL_FILE in \
   "$CLAUDE_DIR/skills/brain-capture/SKILL.md" \
   "$CLAUDE_DIR/skills/daily-note/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-audit/SKILL.md"; do
+  "$CLAUDE_DIR/skills/brain-audit/SKILL.md" \
+  "$CLAUDE_DIR/skills/brain-ticket/SKILL.md" \
+  "$CLAUDE_DIR/skills/brain-ship/SKILL.md" \
+  "$CLAUDE_DIR/skills/brain-linear-sync/SKILL.md" \
+  "$CLAUDE_DIR/skills/brain-handoff/SKILL.md" \
+  "$CLAUDE_DIR/skills/brain-graduate/SKILL.md" \
+  "$CLAUDE_DIR/skills/brain-investigate/SKILL.md"; do
   if [ -f "$SKILL_FILE" ]; then
     sed "s|{{SET_YOUR_BRAIN_PATH}}|\$BRAIN_PATH|g" "$SKILL_FILE" > "$SKILL_FILE.tmp" && mv "$SKILL_FILE.tmp" "$SKILL_FILE"
   fi
@@ -224,6 +230,12 @@ check_file "$CLAUDE_DIR/skills/brain-capture/SKILL.md"          "skills/brain-ca
 check_file "$CLAUDE_DIR/skills/daily-note/SKILL.md"             "skills/daily-note/SKILL.md"
 check_file "$CLAUDE_DIR/skills/brain-audit/SKILL.md"            "skills/brain-audit/SKILL.md"
 check_file "$CLAUDE_DIR/skills/brain-setup/SKILL.md"            "skills/brain-setup/SKILL.md"
+check_file "$CLAUDE_DIR/skills/brain-ticket/SKILL.md"          "skills/brain-ticket/SKILL.md"
+check_file "$CLAUDE_DIR/skills/brain-ship/SKILL.md"            "skills/brain-ship/SKILL.md"
+check_file "$CLAUDE_DIR/skills/brain-linear-sync/SKILL.md"     "skills/brain-linear-sync/SKILL.md"
+check_file "$CLAUDE_DIR/skills/brain-handoff/SKILL.md"         "skills/brain-handoff/SKILL.md"
+check_file "$CLAUDE_DIR/skills/brain-graduate/SKILL.md"        "skills/brain-graduate/SKILL.md"
+check_file "$CLAUDE_DIR/skills/brain-investigate/SKILL.md"     "skills/brain-investigate/SKILL.md"
 check_file "$CLAUDE_DIR/hooks/session-start.sh"                 "hooks/session-start.sh"
 check_file "$CLAUDE_DIR/hooks/pre-compact.sh"                   "hooks/pre-compact.sh"
 check_file "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"         "hooks/post-tool-use-failure.sh"
