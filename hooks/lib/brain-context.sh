@@ -117,6 +117,13 @@ get_project_name() {
     repo_name=$(basename "$repo_root")
     candidates="$repo_name"
 
+    # Add suffix-stripped variant (e.g. "homunculus-dev" → "homunculus")
+    local stripped
+    stripped=$(printf '%s' "$repo_name" | sed 's/-\(dev\|app\|api\|web\|cli\|srv\|server\|client\|frontend\|backend\|mono\|core\)$//')
+    if [ -n "$stripped" ] && [ "$stripped" != "$repo_name" ]; then
+      candidates="$candidates $stripped"
+    fi
+
     # Also try remote origin name as secondary candidate
     local remote_url
     remote_url=$(git -C "$cwd" remote get-url origin 2>/dev/null)
@@ -190,14 +197,76 @@ entry_matches_project() {
   local entry_project
   entry_project=$(get_frontmatter_field "project" "$file")
 
-  # Empty project field = no match
+  # Empty project field = no match via frontmatter
   if [ -z "$entry_project" ]; then
     return 1
   fi
 
   local candidate
   for candidate in $candidates; do
+    # Exact match
     if [ "$entry_project" = "$candidate" ]; then
+      return 0
+    fi
+    # Fuzzy: candidate contains the project value (e.g. "homunculus-dev" contains "homunculus")
+    if printf '%s' "$candidate" | grep -qi "^${entry_project}" 2>/dev/null; then
+      return 0
+    fi
+    # Fuzzy: project value contains the candidate
+    if printf '%s' "$entry_project" | grep -qi "^${candidate}" 2>/dev/null; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+# ------------------------------------------------------------------------------
+# _matches_project_directory <file> <project_candidates>
+#
+# Check if a vault file lives under a directory whose name fuzzy-matches any
+# project candidate. Handles vaults organized by folder without frontmatter.
+# E.g., $BRAIN_PATH/homunculus/notes.md matches candidate "homunculus-dev".
+#
+# Args:
+#   $1 — path to vault markdown file
+#   $2 — space-separated project name candidates
+# Return: 0 if match, 1 if no match
+# ------------------------------------------------------------------------------
+_matches_project_directory() {
+  local file="$1"
+  local candidates="$2"
+
+  # Get the file's path relative to BRAIN_PATH
+  local rel_path="${file#"${BRAIN_PATH}"/}"
+
+  # Get the first directory component (top-level vault folder)
+  local top_dir="${rel_path%%/*}"
+
+  # If file is at vault root (no subdirectory), no directory match
+  if [ "$top_dir" = "$rel_path" ]; then
+    return 1
+  fi
+
+  # Skip common non-project directories
+  case "$top_dir" in
+    brain-mode|preferences|frameworks|templates|intake|daily_notes|inbox)
+      return 1
+      ;;
+  esac
+
+  local candidate
+  for candidate in $candidates; do
+    # Exact match
+    if [ "$top_dir" = "$candidate" ]; then
+      return 0
+    fi
+    # Fuzzy: candidate starts with dir name (e.g. "homunculus-dev" starts with "homunculus")
+    if printf '%s' "$candidate" | grep -qi "^${top_dir}" 2>/dev/null; then
+      return 0
+    fi
+    # Fuzzy: dir name starts with candidate
+    if printf '%s' "$top_dir" | grep -qi "^${candidate}" 2>/dev/null; then
       return 0
     fi
   done
@@ -285,7 +354,12 @@ collect_vault_entries() {
 
   # Collect entries into temp arrays
   local project_entries=()
+  local dir_matched_entries=()
   local global_entries=()
+
+  # Max directory-matched entries to prevent performance issues with large vaults.
+  # Frontmatter-matched entries are always included (no cap).
+  local max_dir_entries=25
 
   # Find all .md files, skip hidden files/dirs and special brain files
   while IFS= read -r -d '' file; do
@@ -307,27 +381,102 @@ collect_vault_entries() {
     fi
 
     if entry_matches_project "$file" "$project_candidates"; then
+      # Frontmatter match — always include (highest confidence)
       project_entries+=("$file")
+    elif _matches_project_directory "$file" "$project_candidates"; then
+      # Directory match — collect separately for capping
+      dir_matched_entries+=("$file")
     elif _is_global_entry "$file"; then
       global_entries+=("$file")
     fi
 
   done < <(find "$BRAIN_PATH" -name "*.md" -not -name ".*" -print0 2>/dev/null)
 
-  # Sort project entries by mtime descending (newest first)
-  if [ "${#project_entries[@]}" -gt 0 ]; then
-    # Build sortable list: mtime<TAB>filepath
-    local sort_input=""
-    local f
-    for f in "${project_entries[@]}"; do
-      local mt
-      mt=$(get_mtime "$f")
-      sort_input="${sort_input}${mt}	${f}"$'\n'
+  # For directory-matched entries, prefer shallow files (depth 1 in project dir)
+  # then cap to max_dir_entries newest files. This avoids ingesting hundreds of
+  # auto-generated code-notes/library-notes while keeping meaningful project files.
+  if [ "${#dir_matched_entries[@]}" -gt "$max_dir_entries" ]; then
+    # Separate shallow (depth 1) from deep entries
+    local shallow=()
+    local deep=()
+    local dm
+    for dm in "${dir_matched_entries[@]}"; do
+      local rel="${dm#"${BRAIN_PATH}"/}"
+      # Count path separators: project/file.md = 1 sep (shallow), project/sub/file.md = 2+ (deep)
+      local sep_count
+      sep_count=$(printf '%s' "$rel" | tr -cd '/' | wc -c | awk '{print $1}')
+      if [ "$sep_count" -le 1 ]; then
+        shallow+=("$dm")
+      else
+        deep+=("$dm")
+      fi
     done
 
-    # Sort numerically by mtime descending, emit just paths
-    printf '%s' "$sort_input" | sort -rn -t$'\t' -k1 | cut -f2
+    # Take all shallow entries, fill remaining cap from deep entries (newest first)
+    dir_matched_entries=()
+    for dm in "${shallow[@]}"; do
+      dir_matched_entries+=("$dm")
+    done
+    local remaining=$(( max_dir_entries - ${#dir_matched_entries[@]} ))
+    if [ "$remaining" -gt 0 ] && [ "${#deep[@]}" -gt 0 ]; then
+      # Sort deep entries by mtime, take newest $remaining
+      local deep_sorted=""
+      for dm in "${deep[@]}"; do
+        local dmt
+        dmt=$(get_mtime "$dm")
+        deep_sorted="${deep_sorted}${dmt}	${dm}"$'\n'
+      done
+      local count=0
+      while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        local path_part="${line#*	}"
+        dir_matched_entries+=("$path_part")
+        count=$(( count + 1 ))
+        [ "$count" -ge "$remaining" ] && break
+      done < <(printf '%s' "$deep_sorted" | sort -rn -t$'\t' -k1)
+    fi
   fi
+
+  # Split directory-matched entries into shallow (depth 1) vs deep for tiered output
+  local dir_shallow=()
+  local dir_deep=()
+  for dm in "${dir_matched_entries[@]}"; do
+    local rel="${dm#"${BRAIN_PATH}"/}"
+    local sep_count
+    sep_count=$(printf '%s' "$rel" | tr -cd '/' | wc -c | awk '{print $1}')
+    if [ "$sep_count" -le 1 ]; then
+      dir_shallow+=("$dm")
+    else
+      dir_deep+=("$dm")
+    fi
+  done
+
+  # Output in 3 priority tiers (each sorted by mtime descending):
+  #   Tier 1: Frontmatter-matched (highest confidence — explicit project: field)
+  #   Tier 2: Shallow directory-matched (top-level project files: handoffs, identity, etc.)
+  #   Tier 3: Deep directory-matched (subdirectory files: code-notes, library-notes, etc.)
+  # Token budget in build_brain_context naturally caps total loaded content,
+  # so higher tiers get priority.
+  local _tier_name
+  for _tier_name in frontmatter dir_shallow dir_deep; do
+    local _tier_arr=()
+    case "$_tier_name" in
+      frontmatter) _tier_arr=("${project_entries[@]}") ;;
+      dir_shallow) _tier_arr=("${dir_shallow[@]}") ;;
+      dir_deep)    _tier_arr=("${dir_deep[@]}") ;;
+    esac
+
+    if [ "${#_tier_arr[@]}" -gt 0 ]; then
+      local sort_input=""
+      local f
+      for f in "${_tier_arr[@]}"; do
+        local mt
+        mt=$(get_mtime "$f")
+        sort_input="${sort_input}${mt}	${f}"$'\n'
+      done
+      printf '%s' "$sort_input" | sort -rn -t$'\t' -k1 | cut -f2
+    fi
+  done
 
   # Global entries (unsorted — order is stable)
   local gf
