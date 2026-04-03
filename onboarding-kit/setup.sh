@@ -310,8 +310,49 @@ fi
 
 echo ""
 
-# ---- Phase 9: Next steps ----
-echo "[9/9] Done."
+# ---- Phase 9: Shell aliases (optional) ----
+echo "[9/10] Shell aliases (optional)..."
+echo ""
+echo "  Would you like to install convenience aliases?"
+echo "    brain            → claude --agent brain-mode"
+echo "    brain-dangerous  → claude --agent brain-mode --dangerously-skip-permissions"
+echo ""
+echo "  ⚠  brain-dangerous skips ALL permission prompts."
+echo ""
+read -p "  Install shell aliases? [y/N] " -n 1 -r
+echo ""
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  # Detect shell config file
+  if [ -n "$ZSH_VERSION" ] || [ "$(basename "$SHELL")" = "zsh" ]; then
+    RC_FILE="$HOME/.zshrc"
+  elif [ -n "$BASH_VERSION" ]; then
+    RC_FILE="$HOME/.bashrc"
+  else
+    RC_FILE="$HOME/.profile"
+  fi
+
+  MARKER="# Claude Brain Toolkit aliases"
+
+  if grep -q "$MARKER" "$RC_FILE" 2>/dev/null; then
+    echo "  ~ Aliases already in $RC_FILE — skipping"
+  else
+    cat >> "$RC_FILE" << 'ALIASES'
+
+# Claude Brain Toolkit aliases
+alias brain='claude --agent brain-mode'
+alias brain-dangerous='claude --agent brain-mode --dangerously-skip-permissions'
+ALIASES
+    echo "  + Aliases installed in $RC_FILE"
+  fi
+else
+  echo "  ~ Skipped. Run 'bash onboarding-kit/aliases.sh' later to install."
+fi
+
+echo ""
+
+# ---- Phase 10: Next steps ----
+echo "[10/10] Done."
 echo ""
 
 if [ "$PASS" = true ]; then
@@ -321,6 +362,10 @@ if [ "$PASS" = true ]; then
   echo ""
   echo "  Start brain mode:"
   echo "    claude --agent brain-mode"
+  echo ""
+  echo "  Or if you installed aliases:"
+  echo "    brain              (standard)"
+  echo "    brain-dangerous    (skip permission prompts)"
   echo ""
   if [ -z "$BRAIN_PATH" ]; then
     echo "  First time? Run /brain-setup after starting Claude"
