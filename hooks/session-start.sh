@@ -62,6 +62,33 @@ source ~/.claude/hooks/lib/brain-context.sh
 
 # --- Full path: startup/resume/compact — build context from vault ---
 
+# --- Git sync check: detect ahead/behind/diverged state for multi-machine safety ---
+GIT_SYNC_STATUS=""
+if git -C "$CWD" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  # Fetch remote state (fast, no merge — timeout after 5s to avoid blocking on network issues)
+  timeout 5 git -C "$CWD" fetch --quiet 2>/dev/null
+
+  LOCAL=$(git -C "$CWD" rev-parse HEAD 2>/dev/null)
+  REMOTE=$(git -C "$CWD" rev-parse '@{upstream}' 2>/dev/null)
+  BASE=$(git -C "$CWD" merge-base HEAD '@{upstream}' 2>/dev/null)
+
+  if [ -n "$LOCAL" ] && [ -n "$REMOTE" ] && [ -n "$BASE" ]; then
+    if [ "$LOCAL" = "$REMOTE" ]; then
+      : # In sync — no message needed
+    elif [ "$LOCAL" = "$BASE" ]; then
+      BEHIND_COUNT=$(git -C "$CWD" rev-list --count HEAD..@{upstream} 2>/dev/null)
+      GIT_SYNC_STATUS="   Git: LOCAL IS BEHIND by ${BEHIND_COUNT} commit(s) — pull before working to avoid divergence"
+    elif [ "$REMOTE" = "$BASE" ]; then
+      AHEAD_COUNT=$(git -C "$CWD" rev-list --count @{upstream}..HEAD 2>/dev/null)
+      GIT_SYNC_STATUS="   Git: ${AHEAD_COUNT} unpushed commit(s) — push when ready"
+    else
+      AHEAD_COUNT=$(git -C "$CWD" rev-list --count @{upstream}..HEAD 2>/dev/null)
+      BEHIND_COUNT=$(git -C "$CWD" rev-list --count HEAD..@{upstream} 2>/dev/null)
+      GIT_SYNC_STATUS="   Git: DIVERGED — ${AHEAD_COUNT} ahead, ${BEHIND_COUNT} behind remote — reconcile before working"
+    fi
+  fi
+fi
+
 # Create a temp file for tracking state from build_brain_context subshell
 _BRAIN_CONTEXT_STATE_FILE=$(mktemp)
 export _BRAIN_CONTEXT_STATE_FILE
@@ -85,6 +112,12 @@ SUMMARY_BLOCK=$(build_summary_block \
   "$_GLOBAL_ACTIVE" \
   "$_NEWEST_MTIME" \
   "${_TOTAL_VAULT_COUNT:-0}")
+
+# Append git sync status to summary if present
+if [ -n "$GIT_SYNC_STATUS" ]; then
+  SUMMARY_BLOCK="${SUMMARY_BLOCK}
+${GIT_SYNC_STATUS}"
+fi
 
 # Combine summary block and vault context
 if [ -n "$VAULT_CONTEXT" ]; then
