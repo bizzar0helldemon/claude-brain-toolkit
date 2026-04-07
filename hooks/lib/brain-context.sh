@@ -606,6 +606,12 @@ build_brain_context() {
   local brain_md_content
   brain_md_content=$(load_brain_md "$cwd")
 
+  # Count total vault entries (before project filtering) for summary accuracy
+  local total_vault_count=0
+  if [ -d "${BRAIN_PATH:-}" ]; then
+    total_vault_count=$(find "$BRAIN_PATH" -name "*.md" -not -name ".*" -not -path '*/\.*' 2>/dev/null | wc -l | awk '{print $1}')
+  fi
+
   # Collect vault entries
   local entries=()
   while IFS= read -r line; do
@@ -675,6 +681,7 @@ ${assembled}"
       printf '_PITFALL_COUNT=%s\n' "$pitfall_count"
       printf '_GLOBAL_ACTIVE=%s\n' "$global_active"
       printf '_NEWEST_MTIME=%s\n' "$newest_mtime"
+      printf '_TOTAL_VAULT_COUNT=%s\n' "$total_vault_count"
       # Write loaded files array
       printf '_LOADED_FILES=(\n'
       local f
@@ -689,7 +696,7 @@ ${assembled}"
 }
 
 # ------------------------------------------------------------------------------
-# build_summary_block <cwd> <source> <project_count> <pitfall_count> <global_active> <newest_mtime>
+# build_summary_block <cwd> <source> <project_count> <pitfall_count> <global_active> <newest_mtime> [total_vault_count]
 #
 # Build the brain summary block for first-message context.
 #
@@ -700,6 +707,7 @@ ${assembled}"
 #   $4 — pitfall_count
 #   $5 — global_active (true/false)
 #   $6 — newest_mtime (Unix timestamp, 0 if none)
+#   $7 — total_vault_count (total .md files in vault, optional)
 # Output: formatted summary block (stdout)
 # ------------------------------------------------------------------------------
 build_summary_block() {
@@ -709,6 +717,7 @@ build_summary_block() {
   local pitfall_count="${4:-0}"
   local global_active="${5:-false}"
   local newest_mtime="${6:-0}"
+  local total_vault_count="${7:-0}"
 
   local project_name
   project_name=$(get_project_name "$cwd" | awk '{print $1}')
@@ -726,12 +735,21 @@ build_summary_block() {
    ${project_count} project notes (newest: ${newest_date})
    ${pitfall_count} pitfalls"
 
+  # Show total vault size when it differs from project count (avoids "empty vault" confusion)
+  if [ "$total_vault_count" -gt 0 ] && [ "$project_count" -eq 0 ]; then
+    summary="${summary}
+   ${total_vault_count} total vault entries (none matched project: ${project_name})"
+  elif [ "$total_vault_count" -gt "$project_count" ] && [ "$project_count" -gt 0 ]; then
+    summary="${summary}
+   ${total_vault_count} total vault entries"
+  fi
+
   if [ "$global_active" = "true" ]; then
     summary="${summary}
    Global preferences active"
   fi
 
-  # First-time project offer
+  # First-time project offer — only when vault is truly empty or no match for this project
   if [ "$project_count" -eq 0 ]; then
     local brain_md_exists=false
     local project_root
@@ -739,9 +757,12 @@ build_summary_block() {
     [ -z "$project_root" ] && project_root="$cwd"
     [ -f "${project_root}/.brain.md" ] && brain_md_exists=true
 
-    if [ "$brain_md_exists" = "false" ]; then
+    if [ "$brain_md_exists" = "false" ] && [ "$total_vault_count" -eq 0 ]; then
       summary="${summary}
    No project notes yet — ask me to scan this project for brain cataloging"
+    elif [ "$brain_md_exists" = "false" ] && [ "$total_vault_count" -gt 0 ]; then
+      summary="${summary}
+   No notes match this project — add project: ${project_name} to frontmatter, or create a .brain.md"
     fi
   fi
 

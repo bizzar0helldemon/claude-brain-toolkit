@@ -83,7 +83,8 @@ SUMMARY_BLOCK=$(build_summary_block \
   "$_PROJECT_COUNT" \
   "$_PITFALL_COUNT" \
   "$_GLOBAL_ACTIVE" \
-  "$_NEWEST_MTIME")
+  "$_NEWEST_MTIME" \
+  "${_TOTAL_VAULT_COUNT:-0}")
 
 # Combine summary block and vault context
 if [ -n "$VAULT_CONTEXT" ]; then
