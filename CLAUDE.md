@@ -39,6 +39,8 @@ export BRAIN_PATH="{{SET_YOUR_BRAIN_PATH}}"
 | Intake sessions & discovery | [[Intake System Index]] (`intake/_INDEX.md`) |
 | AI frameworks & governance | `frameworks/` directory |
 | Prompt & pattern library | [[Prompt & Pattern Library]] (`prompts/_INDEX.md`) |
+| Knowledge synthesis | [[Knowledge Synthesis Index]] (`synthesis/_INDEX.md`) |
+| Search vault by meaning | `/brain-search` or `tools/brain-search.py` |
 | Templates & conventions | `brain-scan-templates.md` |
 
 ---

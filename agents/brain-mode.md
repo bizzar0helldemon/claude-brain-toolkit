@@ -124,6 +124,8 @@ These slash commands are available in brain-mode sessions:
 - `/brain-capture` — Extract patterns, prompts, and lessons from the current conversation
 - `/daily-note` — Log a journal entry to `daily_notes/`
 - `/brain-audit` — Run a vault health check (stale entries, missing indexes, broken links)
+- `/brain-search` — Search the vault by meaning using full-text search (with optional semantic vector search)
+- `/brain-synthesize` — Create or update living knowledge pages that compound learnings across sessions and projects
 - `/brain-add-pattern` -- Add an error pattern and its solution to the pattern store for automatic future recognition
 - `/brain-setup` — First-time onboarding wizard: configure BRAIN_PATH and create the vault directory
 - `/brain-relocate` — Move your vault to a new location: updates BRAIN_PATH in settings.json and shell profile
