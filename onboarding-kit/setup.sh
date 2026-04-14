@@ -78,22 +78,9 @@ done
 
 # Template substitution: replace {{SET_YOUR_BRAIN_PATH}} with $BRAIN_PATH env var reference
 # Portable pattern: temp file + mv (NOT sed -i which differs between macOS and GNU)
-for SKILL_FILE in \
-  "$CLAUDE_DIR/skills/brain-capture/SKILL.md" \
-  "$CLAUDE_DIR/skills/daily-note/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-audit/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-ticket/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-ship/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-linear-sync/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-handoff/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-graduate/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-investigate/SKILL.md" \
-  "$CLAUDE_DIR/skills/brain-evolve/SKILL.md" \
-  "$CLAUDE_DIR/skills/session-guardian/SKILL.md" \
-  "$CLAUDE_DIR/skills/daily-sync/SKILL.md" \
-  "$CLAUDE_DIR/skills/pre-pr-scan/SKILL.md" \
-  "$CLAUDE_DIR/skills/vault-documenter/SKILL.md"; do
-  if [ -f "$SKILL_FILE" ]; then
+# Dynamic glob — automatically covers any new skills added in the future
+for SKILL_FILE in "$CLAUDE_DIR"/skills/*/SKILL.md; do
+  if [ -f "$SKILL_FILE" ] && grep -q '{{SET_YOUR_BRAIN_PATH}}' "$SKILL_FILE"; then
     sed "s|{{SET_YOUR_BRAIN_PATH}}|\$BRAIN_PATH|g" "$SKILL_FILE" > "$SKILL_FILE.tmp" && mv "$SKILL_FILE.tmp" "$SKILL_FILE"
   fi
 done

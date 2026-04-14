@@ -25,6 +25,9 @@ archive/
 # Local dev overrides (never ship to users)
 CLAUDE.local.md
 
+# Python venv (created by user for vector search support)
+.venv/
+
 # OS files
 .DS_Store
 Thumbs.db
