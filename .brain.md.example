@@ -4,17 +4,25 @@ Describe what this directory is for and any cross-system bindings Claude should 
 
 This file is loaded automatically by the brain-mode session-start hook (up to 500 tokens) and prepended to the session context. It's a good home for anything that's specific to *this directory* rather than to the vault as a whole.
 
-## Linear Binding (optional)
+To populate this file correctly for a new project, **run `/brain-bind-project`** inside Claude Code — it walks the 3-tier decision tree defined in `docs/NEW-PROJECT-SOP.md` (Team / Project-within-team / Inbox fallback) and writes this file for you. Manual format below for reference.
 
-If this project has a dedicated Linear team, record it here so every session in this directory uses the right team by default:
+## Linear Binding
+
+If this directory is bound to a specific Linear team (and optionally a project within it), record the IDs so every session here defaults to the right scope automatically.
 
 - **Team name:** {{Team Display Name}}
 - **Team ID:** `{{uuid-from-list_teams}}`
-- **Team key:** `{{KEY}}` *(optional — the issue prefix like `ENG` in `ENG-42`)*
+- **Team key:** `{{KEY}}` *(the issue prefix like `ENG` in `ENG-42`)*
 
-To look up the team UUID, run the Linear MCP tool: `list_teams` with a `query` matching the team name.
+If a Linear project was also created for this directory (per the SOP's Tier-2 threshold: multi-phase / multi-week / ≥5 issues planned):
 
-When creating issues, fetching tickets, listing cycles, or running any `brain-linear-sync` / `brain-ticket` / `brain-ship` operation from this directory, default to this team unless the user explicitly names a different one.
+- **Project name:** {{Project Name}}
+- **Project ID:** `{{project-uuid}}`
+- **Project slug:** `{{slug}}`
+
+When creating issues, fetching tickets, listing cycles, or running any `brain-linear-sync` / `brain-ticket` / `brain-ship` operation from this directory, default to this team (and project, if set) unless the user explicitly names a different one.
+
+To look up IDs manually: run the Linear MCP tool `list_teams` with a `query` matching the team name, then `list_projects` scoped to that team.
 
 ## Repo Identity
 
@@ -31,4 +39,8 @@ Anything else future-Claude should know: deployment targets, special build comma
 
 ## Usage
 
-Copy this file to `.brain.md` and fill in the placeholders. `.brain.md` itself is gitignored — safe for personal IDs and private bindings.
+**Recommended:** run `/brain-bind-project` in a fresh brain-mode session from this directory. The skill handles Linear team lookup or creation (via `LINEAR_API_KEY`), applies the 3-tier threshold, writes this file with correct values, and handles `.gitignore` placement.
+
+**Manual:** copy this file to `.brain.md` and fill in the placeholders. `.brain.md` is gitignored in the toolkit repo — safe for personal IDs. In a private repo where teammates benefit from the binding, remove the gitignore entry so the file is committed.
+
+See `docs/NEW-PROJECT-SOP.md` for the full procedure and threshold guidance.

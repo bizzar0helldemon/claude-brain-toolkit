@@ -101,6 +101,51 @@ When a Bash command fails, the PostToolUseFailure hook checks the error against 
 
 To build the pattern store, use `/brain-add-pattern` after solving a recurring error. You can also proactively suggest adding a pattern when you notice the user fixing the same type of error repeatedly.
 
+## Linear Project Binding — Prompt Before First Scoped Call
+
+Before executing **any Linear MCP tool call that implicitly or explicitly scopes to a team** from a directory without a `.brain.md` file, pause and route through the binding SOP.
+
+**Tools that require a bound scope:**
+- `mcp__claude_ai_Linear__save_issue` (create ticket)
+- `mcp__claude_ai_Linear__list_issues` (without an explicit `team` argument)
+- `mcp__claude_ai_Linear__list_cycles`, `list_milestones`, `list_projects` (without explicit team)
+- Any operation that would default to "the user's default team" — those defaults are wrong when the directory has a different intended scope.
+
+**Tools that are safe without a binding:**
+- `mcp__claude_ai_Linear__list_teams`, `get_team`, `get_user`, `list_users` — workspace-level, no team scope
+- Any call the user made with an explicit `team:` argument — the user has declared scope
+
+### Detection procedure
+
+When the user asks for a Linear action (create ticket, list issues, etc.):
+
+1. Check for `.brain.md` at the repo root (`git rev-parse --show-toplevel` then test for the file). The session-start hook already loads it into context if it exists — if you didn't see a `.brain.md` block in the injected context, assume it's missing.
+2. If `.brain.md` exists with a `Linear Binding` section → proceed with the action, using the team (and project if present) from the binding as the default scope.
+3. If `.brain.md` is missing → pause. Do NOT silently pick a team.
+
+### Pause prompt (use this template)
+
+> "This directory isn't bound to a Linear team yet. How should I scope this action?
+>
+> 1. **Bind now** — run `/brain-bind-project` to walk the full decision tree (recommended if this directory has substantial upcoming work)
+> 2. **Inbox fallback** — file this one action to the **Inbox** team and skip binding; we can bind later if the work grows
+> 3. **One-time override** — use an existing team name you'll give me right now, without writing a binding
+>
+> Which?"
+
+Then branch:
+- **(1)** → invoke `/brain-bind-project`, let it write `.brain.md`, then continue with the original user request using the newly-bound scope
+- **(2)** → look up the Inbox team (`list_teams` with `query: "Inbox"`), scope the action there, proceed. Do NOT write `.brain.md` — leave the directory unbound so the next Linear action re-prompts.
+- **(3)** → use the named team for this one call; do not persist
+
+### What not to do
+
+- **Do not default to the first team in `list_teams`.** Linear workspaces have many teams; the alphabetical/creation-order default is rarely correct.
+- **Do not assume the directory name matches a Linear team name.** It often doesn't — the repo slug and the Linear team key are independently chosen.
+- **Do not silently pick the Inbox team.** That's a valid *option* (#2 above) but the user must confirm it. Silent Inbox filing makes work hard to find later.
+
+See `docs/NEW-PROJECT-SOP.md` for the full procedure and threshold guidance.
+
 ## When the Vault Is Empty
 
 If vault context loaded successfully but shows 0 project entries and 0 pitfalls, include a note inside the collapsed session-start block:
@@ -133,3 +178,4 @@ These slash commands are available in brain-mode sessions:
 - `/daily-sync` — Fast operational snapshot: vault health, git state, drift detection, priorities
 - `/pre-pr-scan` — Multi-agent quality gate: CI compliance, security, logic bugs, commit hygiene
 - `/vault-documenter` — Auto-extract learnings from completed work into the vault
+- `/brain-bind-project` — Bind the current directory to a Linear team (and optionally a project) so all Linear operations here default to the right scope. See `docs/NEW-PROJECT-SOP.md`.
