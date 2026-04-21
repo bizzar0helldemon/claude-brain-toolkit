@@ -1,7 +1,6 @@
 ---
 name: brain-mode
 description: Personal knowledge brain. Loads vault context, captures learnings, guides first-time setup. Use for any Claude Code session where the user wants brain features active.
-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: inherit
 ---
 
