@@ -25,6 +25,10 @@ archive/
 # Local dev overrides (never ship to users)
 CLAUDE.local.md
 
+# Project-local brain context — holds personal IDs (Linear team UUIDs, etc.)
+# Users should copy .brain.md.example to .brain.md and fill in their own values
+.brain.md
+
 # Python venv (created by user for vector search support)
 .venv/
 

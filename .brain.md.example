@@ -1,0 +1,34 @@
+# Project Context: {{project-slug}}
+
+Describe what this directory is for and any cross-system bindings Claude should know about at session start.
+
+This file is loaded automatically by the brain-mode session-start hook (up to 500 tokens) and prepended to the session context. It's a good home for anything that's specific to *this directory* rather than to the vault as a whole.
+
+## Linear Binding (optional)
+
+If this project has a dedicated Linear team, record it here so every session in this directory uses the right team by default:
+
+- **Team name:** {{Team Display Name}}
+- **Team ID:** `{{uuid-from-list_teams}}`
+- **Team key:** `{{KEY}}` *(optional — the issue prefix like `ENG` in `ENG-42`)*
+
+To look up the team UUID, run the Linear MCP tool: `list_teams` with a `query` matching the team name.
+
+When creating issues, fetching tickets, listing cycles, or running any `brain-linear-sync` / `brain-ticket` / `brain-ship` operation from this directory, default to this team unless the user explicitly names a different one.
+
+## Repo Identity
+
+- **Brain project tag:** `{{project-slug}}` (for vault frontmatter / project-scoped search)
+- **GitHub:** `github.com/{{owner}}/{{repo}}`
+- **Default branch:** `main` or `master`
+- **Role:** What this repo is for in one sentence.
+
+## Operational Notes (optional)
+
+Anything else future-Claude should know: deployment targets, special build commands, gotchas specific to this codebase, which skills to prefer, etc.
+
+---
+
+## Usage
+
+Copy this file to `.brain.md` and fill in the placeholders. `.brain.md` itself is gitignored — safe for personal IDs and private bindings.
