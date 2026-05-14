@@ -7,6 +7,10 @@ if ! brain_path_validate; then
   exit 1
 fi
 
+# Source brain-context library — provides get_project_name for fast-path
+# project-match check. Sourcing is side-effect-free (function defs + module vars).
+source ~/.claude/hooks/lib/brain-context.sh
+
 # Reset idle-capture one-offer guard for new session
 rm -f "$BRAIN_PATH/.brain-idle-offered" 2>/dev/null
 
@@ -23,10 +27,15 @@ fi
 CACHED_CONTEXT_FILE="${BRAIN_PATH}/.brain-cached-context.json"
 
 if [ "$SOURCE" = "clear" ]; then
+  CURRENT_PROJECT=$(get_project_name "$CWD" | awk '{print $1}')
+
   if [ -f "$CACHED_CONTEXT_FILE" ]; then
-    # Reuse the context from the previous session start
+    CACHED_PROJECT=$(jq -r '.project // empty' "$CACHED_CONTEXT_FILE" 2>/dev/null)
     CACHED_CONTEXT=$(jq -r '.additionalContext // empty' "$CACHED_CONTEXT_FILE" 2>/dev/null)
-    if [ -n "$CACHED_CONTEXT" ]; then
+
+    # Serve from cache only when the cache was stamped with the current project.
+    # Legacy caches (no project field) are treated as untrusted — fall through.
+    if [ -n "$CACHED_CONTEXT" ] && [ -n "$CACHED_PROJECT" ] && [ "$CACHED_PROJECT" = "$CURRENT_PROJECT" ]; then
       HOOK_OUTPUT=$(jq -n \
         --arg ctx "$CACHED_CONTEXT" \
         '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": $ctx}}')
@@ -36,14 +45,24 @@ if [ "$SOURCE" = "clear" ]; then
         printf '%s\n' "BRAIN_LOADED=1" >> "$CLAUDE_ENV_FILE"
       fi
 
-      brain_log_error "SessionStart" "Fast reload from cache (source: clear)"
+      brain_log_error "SessionStart" "Fast reload from cache (source: clear, project: $CURRENT_PROJECT)"
       exit 0
+    fi
+
+    # Project mismatch or legacy cache — log and fall through to minimal emit below.
+    # Don't run the full path: /clear is meant to stay instant.
+    if [ -n "$CACHED_PROJECT" ] && [ "$CACHED_PROJECT" != "$CURRENT_PROJECT" ]; then
+      brain_log_error "SessionStart" \
+        "Cache project mismatch (cached=$CACHED_PROJECT, current=$CURRENT_PROJECT) — emitting minimal context"
+    elif [ -z "$CACHED_PROJECT" ] && [ -n "$CACHED_CONTEXT" ]; then
+      brain_log_error "SessionStart" \
+        "Legacy cache without project field — emitting minimal context (will restamp on next startup)"
     fi
   fi
 
-  # No cache file yet — emit minimal context so /clear stays instant
-  # The cache will be built on the next full startup
-  MINIMAL_CTX="Brain: /clear (no cache yet — full context loads on next startup)"
+  # No usable cache for this project — emit minimal context so /clear stays instant.
+  # The cache will be rebuilt with a project stamp on the next full startup.
+  MINIMAL_CTX="Brain: /clear (no cache for $CURRENT_PROJECT yet — full context loads on next startup)"
   HOOK_OUTPUT=$(jq -n \
     --arg ctx "$MINIMAL_CTX" \
     '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": $ctx}}')
@@ -53,12 +72,9 @@ if [ "$SOURCE" = "clear" ]; then
     printf '%s\n' "BRAIN_LOADED=1" >> "$CLAUDE_ENV_FILE"
   fi
 
-  brain_log_error "SessionStart" "Fast /clear with no cache — emitted minimal context"
+  brain_log_error "SessionStart" "Fast /clear with no usable cache for $CURRENT_PROJECT — emitted minimal context"
   exit 0
 fi
-
-# Source brain-context library (only needed for full path)
-source ~/.claude/hooks/lib/brain-context.sh
 
 # --- Full path: startup/resume/compact — build context from vault ---
 
@@ -136,11 +152,19 @@ HOOK_OUTPUT=$(jq -n \
 
 emit_json "$HOOK_OUTPUT"
 
-# Cache the context for fast /clear reloads
-jq -n --arg ctx "$ADDITIONAL_CONTEXT" '{"additionalContext": $ctx}' > "$CACHED_CONTEXT_FILE" 2>/dev/null
+# Resolve project name once for both cache stamp and session state below.
+PROJECT_NAME=$(get_project_name "$CWD" | awk '{print $1}')
+
+# Cache the context for fast /clear reloads. Stamp with project + cwd so the
+# fast path can verify the cache belongs to the current project (see BTK-1).
+jq -n \
+  --arg ctx "$ADDITIONAL_CONTEXT" \
+  --arg project "$PROJECT_NAME" \
+  --arg cwd "$CWD" \
+  '{additionalContext: $ctx, project: $project, cwd: $cwd, cached_at: now}' \
+  > "$CACHED_CONTEXT_FILE" 2>/dev/null
 
 # Persist session state for delta-loading on next session
-PROJECT_NAME=$(get_project_name "$CWD" | awk '{print $1}')
 if [ "${#_LOADED_FILES[@]}" -gt 0 ]; then
   write_session_state "$PROJECT_NAME" "${_LOADED_FILES[@]}"
 else
