@@ -91,6 +91,12 @@ project_list() {
 }
 
 # ── Actions ──────────────────────────────────────────────────────
+# Project/game launches run in dangerous mode (skip permission prompts) —
+# you only launch trusted directories from your own registry.
+# NOTE: flag order matters — `--agent` is silently ignored if it comes
+# AFTER --dangerously-skip-permissions (see vault: CLI Flag Ordering Sensitivity).
+BRAIN_CMD="claude --agent brain-mode --dangerously-skip-permissions"
+
 do_launch_project() {
   local pick
   pick=$(project_list | awk -F'\t' '{printf "%-32s %s\n", $1, $2}' | \
@@ -99,7 +105,7 @@ do_launch_project() {
   local dir
   dir=$(printf '%s' "$pick" | awk '{print $NF}')
   [ -d "$dir" ] || { echo "  ! Directory not found: $dir"; return; }
-  launch_terminal "$dir" "claude --agent brain-mode"
+  launch_terminal "$dir" "$BRAIN_CMD"
 }
 
 do_brain_here() {
@@ -119,7 +125,7 @@ do_game_night() {
       "🎲 Surprise me" | \
     fzf --height=50% --reverse --prompt="game ▸ " --header="AI Fluency Game Night") || return
   local prompt="/brain-game ${game#* }"
-  launch_terminal "$BRAIN_PATH" "claude --agent brain-mode '$prompt'"
+  launch_terminal "$BRAIN_PATH" "$BRAIN_CMD '$prompt'"
 }
 
 do_search() {
