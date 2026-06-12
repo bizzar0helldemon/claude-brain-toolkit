@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
-# Wrapper: runs brain-search.py using the toolkit's venv if available, else system python3.
+# Wrapper: runs brain-search.py using the brain venv if available, else system python3.
+# Venv lookup order:
+#   1. $BRAIN_VENV (explicit override)
+#   2. ~/.local/share/claude-brain-venv (recommended — keeps the multi-GB venv out of the repo)
+#   3. <repo>/.venv (legacy location)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-VENV_PYTHON="${SCRIPT_DIR}/../.venv/bin/python3"
 
-if [ -x "$VENV_PYTHON" ]; then
-  exec "$VENV_PYTHON" "${SCRIPT_DIR}/brain-search.py" "$@"
-else
-  exec python3 "${SCRIPT_DIR}/brain-search.py" "$@"
-fi
+for VENV_DIR in "${BRAIN_VENV:-}" "$HOME/.local/share/claude-brain-venv" "${SCRIPT_DIR}/../.venv"; do
+  if [ -n "$VENV_DIR" ] && [ -x "$VENV_DIR/bin/python3" ]; then
+    exec "$VENV_DIR/bin/python3" "${SCRIPT_DIR}/brain-search.py" "$@"
+  fi
+done
+
+exec python3 "${SCRIPT_DIR}/brain-search.py" "$@"

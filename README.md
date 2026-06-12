@@ -126,8 +126,7 @@ Row 2: Brain state, context bar (color-coded), lines changed, dirty files, sessi
 | Command | What It Does |
 |---------|-------------|
 | `/brain-capture` | Extract patterns, prompts, and lessons from the current conversation |
-| `/brain-graduate` | Promote learnings with reliability scoring (high/medium/experimental) |
-| `/vault-documenter` | Auto-extract learnings from completed work — corrections, discoveries, techniques, pitfalls |
+| `/brain-graduate` | Promote learnings with reliability scoring (high/medium/experimental); `--auto` mode passively extracts learnings from completed work |
 | `/daily-note` | Log a journal entry to `daily_notes/` |
 
 ### Quality & Safety
@@ -157,6 +156,12 @@ Row 2: Brain state, context bar (color-coded), lines changed, dirty files, sessi
 | `/brain-add-pattern` | Add an error pattern and solution to the pattern store |
 | `/brain-setup` | First-time onboarding wizard |
 | `/brain-relocate` | Move your vault to a new path |
+
+### Play
+
+| Command | What It Does |
+|---------|-------------|
+| `/brain-game` | Game night — AI Fluency games (riddles, crosswords, RPG) and resumable quest campaigns |
 
 ## Vault Structure
 
@@ -219,7 +224,7 @@ claude-brain-toolkit/
       brain-context.sh          # Vault context builder
   global-skills/
     brain-capture/              # Pattern extraction
-    brain-graduate/             # Knowledge graduation
+    brain-graduate/             # Knowledge graduation (manual + --auto passive extraction)
     brain-investigate/          # Structured debugging
     brain-audit/                # Vault health check
     brain-evolve/               # Self-improvement cycle
@@ -230,7 +235,7 @@ claude-brain-toolkit/
     session-guardian/            # Context & focus protection
     daily-sync/                 # Operational snapshot
     pre-pr-scan/                # Multi-agent quality gate
-    vault-documenter/           # Passive learning extraction
+    brain-game/                 # Game night + quest campaigns
     daily-note/                 # Journal entries
   commands/
     brain-add-pattern.md        # Error pattern management

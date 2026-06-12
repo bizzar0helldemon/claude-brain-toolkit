@@ -58,7 +58,7 @@ echo "[3/9] Deploying global skills..."
 
 SKILL_COUNT=0
 
-# Copy global skills (brain-capture, daily-note, brain-audit)
+# Copy global skills (canonical versions of all brain skills)
 for SKILL_DIR in "$REPO_DIR/global-skills"/*/; do
   SKILL_NAME="$(basename "$SKILL_DIR")"
   mkdir -p "$CLAUDE_DIR/skills/$SKILL_NAME"
@@ -68,20 +68,26 @@ for SKILL_DIR in "$REPO_DIR/global-skills"/*/; do
 done
 
 # Copy onboarding-kit skills (brain-setup and any others)
+# Skills that also exist in global-skills/ are skipped — global-skills is canonical.
 for SKILL_DIR in "$KIT_DIR/skills"/*/; do
   SKILL_NAME="$(basename "$SKILL_DIR")"
+  if [ -d "$REPO_DIR/global-skills/$SKILL_NAME" ]; then
+    echo "  ~ $SKILL_NAME skipped (global-skills version is canonical)"
+    continue
+  fi
   mkdir -p "$CLAUDE_DIR/skills/$SKILL_NAME"
   cp -r "$SKILL_DIR"* "$CLAUDE_DIR/skills/$SKILL_NAME/"
   SKILL_COUNT=$((SKILL_COUNT + 1))
   echo "  + $SKILL_NAME deployed"
 done
 
-# Template substitution: replace {{SET_YOUR_BRAIN_PATH}} with $BRAIN_PATH env var reference
+# Template substitution: replace brain-path placeholders with $BRAIN_PATH env var reference
+# Canonical token is {{SET_YOUR_BRAIN_PATH}}; {{BRAIN_PATH}} is substituted too (legacy files).
 # Portable pattern: temp file + mv (NOT sed -i which differs between macOS and GNU)
 # Dynamic glob — automatically covers any new skills added in the future
 for SKILL_FILE in "$CLAUDE_DIR"/skills/*/SKILL.md; do
-  if [ -f "$SKILL_FILE" ] && grep -q '{{SET_YOUR_BRAIN_PATH}}' "$SKILL_FILE"; then
-    sed "s|{{SET_YOUR_BRAIN_PATH}}|\$BRAIN_PATH|g" "$SKILL_FILE" > "$SKILL_FILE.tmp" && mv "$SKILL_FILE.tmp" "$SKILL_FILE"
+  if [ -f "$SKILL_FILE" ] && grep -qE '\{\{(SET_YOUR_)?BRAIN_PATH\}\}' "$SKILL_FILE"; then
+    sed -e "s|{{SET_YOUR_BRAIN_PATH}}|\$BRAIN_PATH|g" -e "s|{{BRAIN_PATH}}|\$BRAIN_PATH|g" "$SKILL_FILE" > "$SKILL_FILE.tmp" && mv "$SKILL_FILE.tmp" "$SKILL_FILE"
   fi
 done
 
@@ -131,6 +137,19 @@ echo "[5/9] Deploying statusline..."
 cp "$REPO_DIR/statusline.sh" "$CLAUDE_DIR/statusline.sh"
 chmod +x "$CLAUDE_DIR/statusline.sh"
 echo "  + statusline.sh deployed to $CLAUDE_DIR/"
+
+echo ""
+
+# ---- Phase 5a: Deploy dashboard + search tools ----
+echo "[5a/9] Deploying brain dashboard and search tools..."
+
+mkdir -p "$CLAUDE_DIR/tools"
+cp "$REPO_DIR/tools/brain-dashboard.sh" "$CLAUDE_DIR/brain-dashboard.sh"
+cp "$REPO_DIR/tools/brain-search" "$CLAUDE_DIR/tools/brain-search"
+cp "$REPO_DIR/tools/brain-search.py" "$CLAUDE_DIR/tools/brain-search.py"
+chmod +x "$CLAUDE_DIR/brain-dashboard.sh" "$CLAUDE_DIR/tools/brain-search"
+echo "  + brain-dashboard.sh deployed to $CLAUDE_DIR/ (alias: brain)"
+echo "  + tools/brain-search + brain-search.py deployed to $CLAUDE_DIR/tools/"
 
 echo ""
 
@@ -250,7 +269,7 @@ check_file "$CLAUDE_DIR/skills/brain-evolve/SKILL.md"          "skills/brain-evo
 check_file "$CLAUDE_DIR/skills/session-guardian/SKILL.md"      "skills/session-guardian/SKILL.md"
 check_file "$CLAUDE_DIR/skills/daily-sync/SKILL.md"            "skills/daily-sync/SKILL.md"
 check_file "$CLAUDE_DIR/skills/pre-pr-scan/SKILL.md"           "skills/pre-pr-scan/SKILL.md"
-check_file "$CLAUDE_DIR/skills/vault-documenter/SKILL.md"      "skills/vault-documenter/SKILL.md"
+check_file "$CLAUDE_DIR/skills/brain-game/SKILL.md"            "skills/brain-game/SKILL.md"
 check_file "$CLAUDE_DIR/hooks/session-start.sh"                 "hooks/session-start.sh"
 check_file "$CLAUDE_DIR/hooks/pre-compact.sh"                   "hooks/pre-compact.sh"
 check_file "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"         "hooks/post-tool-use-failure.sh"
@@ -263,6 +282,9 @@ check_file "$CLAUDE_DIR/hooks/session-guardian.sh"              "hooks/session-g
 check_file "$CLAUDE_DIR/hooks/lib/brain-path.sh"                "hooks/lib/brain-path.sh"
 check_file "$CLAUDE_DIR/hooks/lib/brain-context.sh"             "hooks/lib/brain-context.sh"
 check_file "$CLAUDE_DIR/statusline.sh"                          "statusline.sh"
+check_file "$CLAUDE_DIR/brain-dashboard.sh"                     "brain-dashboard.sh"
+check_file "$CLAUDE_DIR/tools/brain-search"                     "tools/brain-search"
+check_file "$CLAUDE_DIR/tools/brain-search.py"                  "tools/brain-search.py"
 check_file "$CLAUDE_DIR/commands/brain/brain-add-pattern.md"    "commands/brain/brain-add-pattern.md"
 check_file "$CLAUDE_DIR/commands/brain/brain-relocate.md"      "commands/brain/brain-relocate.md"
 
@@ -301,7 +323,8 @@ echo ""
 echo "[9/10] Shell aliases (optional)..."
 echo ""
 echo "  Would you like to install convenience aliases?"
-echo "    brain            → claude --agent brain-mode"
+echo "    brain            → brain dashboard (projects, game night, search, capture)"
+echo "    brain-here       → claude --agent brain-mode (skip menu, this directory)"
 echo "    brain-dangerous  → claude --agent brain-mode --dangerously-skip-permissions"
 echo ""
 echo "  ⚠  brain-dangerous skips ALL permission prompts."
@@ -327,7 +350,8 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     cat >> "$RC_FILE" << 'ALIASES'
 
 # Claude Brain Toolkit aliases
-alias brain='claude --agent brain-mode'
+alias brain='~/.claude/brain-dashboard.sh'
+alias brain-here='claude --agent brain-mode'
 alias brain-dangerous='claude --agent brain-mode --dangerously-skip-permissions'
 ALIASES
     echo "  + Aliases installed in $RC_FILE"
@@ -351,7 +375,8 @@ if [ "$PASS" = true ]; then
   echo "    claude --agent brain-mode"
   echo ""
   echo "  Or if you installed aliases:"
-  echo "    brain              (standard)"
+  echo "    brain              (dashboard — projects, game night, search)"
+  echo "    brain-here         (brain session in current directory)"
   echo "    brain-dangerous    (skip permission prompts)"
   echo ""
   if [ -z "$BRAIN_PATH" ]; then

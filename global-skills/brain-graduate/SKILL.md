@@ -1,19 +1,25 @@
 ---
 name: brain-graduate
-description: Graduate learnings from the current session or project research into the brain vault's knowledge store — with reliability scoring and deduplication.
-argument-hint: [focus area]
+description: Graduate learnings from the current session or project research into the brain vault's knowledge store — with reliability scoring and deduplication. Use --auto for passive post-work extraction (formerly /vault-documenter).
+argument-hint: [--auto] [focus area]
 ---
 
 # Brain Graduate — Knowledge Graduation
 
 Promote valuable learnings from conversations, research, and project work into the brain vault's persistent knowledge store. Learnings accumulate over time and decay based on reliability scoring, so the brain stays current.
 
-**Usage**: `/brain-graduate [focus area]`
+This skill has two modes:
+
+- **Manual mode** (default) — the user invokes it deliberately; full enrichment walkthrough with user-confirmed reliability scoring
+- **Auto mode** (`--auto`) — proactive extraction after significant work (commits, debugging sessions, session end); candidates are presented for one-tap confirmation and saved at `experimental` reliability. This replaces the old `/vault-documenter` skill.
+
+**Usage**: `/brain-graduate [--auto] [focus area]`
 
 **Examples**:
-- `/brain-graduate` — scan conversation for graduatable learnings
+- `/brain-graduate` — scan conversation for graduatable learnings (manual mode)
 - `/brain-graduate debugging` — focus on debugging-related learnings
 - `/brain-graduate that API workaround` — graduate a specific discovery
+- `/brain-graduate --auto` — passive scan after completed work; minimal questions, experimental reliability
 
 ## Paths
 
@@ -58,6 +64,13 @@ Bad candidates:
 | `technique` | A reusable approach that worked | "Use git worktrees for parallel ticket work" |
 | `pitfall` | A trap to avoid | "Don't mock the database in integration tests" |
 | `architecture` | A design insight | "Event sourcing fits this domain because..." |
+| `performance` | A measured before/after improvement | "Switching to bulk insert reduced import time from 12s to 0.8s" |
+
+**Signal strength guide** (especially important in `--auto` mode):
+
+- **Strong signals (high confidence):** user correcting Claude ("no", "actually", "that's wrong"); Claude correcting itself; explicit surprise ("interesting", "didn't know that"); error → fix cycles; before/after performance measurements
+- **Moderate signals:** non-obvious configuration that took multiple attempts; workarounds for framework/library limitations; patterns that worked first-try in a complex domain
+- **Weak signals (skip unless user confirms):** standard coding patterns; well-documented API usage; simple bug fixes with obvious causes
 
 **Present candidates:**
 ```
@@ -74,7 +87,9 @@ Which would you like to graduate? (numbers, 'all', or describe something I misse
 
 ### Step 2: Enrich Each Learning
 
-For each selected learning, walk through:
+**In `--auto` mode, skip the walkthrough:** infer all fields from conversation context, set `reliability: experimental` and `source: auto`, and show a compact summary for one-tap confirmation. Auto-extracted learnings need human validation (a later manual `/brain-graduate` re-review or natural re-encounter) to promote to `medium` or `high`. Never write without user confirmation, even in auto mode.
+
+**In manual mode**, for each selected learning, walk through:
 
 1. **Title** — concise, searchable name
 2. **Type** — correction, discovery, technique, pitfall, or architecture
@@ -116,10 +131,10 @@ File: `{{SET_YOUR_BRAIN_PATH}}/learnings/{slug}.md`
 ---
 title: "{title}"
 type: learning
-learning_type: "{correction|discovery|technique|pitfall|architecture}"
+learning_type: "{correction|discovery|technique|pitfall|architecture|performance}"
 domain: "{domain}"
 reliability: "{high|medium|experimental}"
-source: "{conversation|research|error-pattern}"
+source: "{conversation|research|error-pattern|auto}"
 graduated: "{YYYY-MM-DD}"
 last_validated: "{YYYY-MM-DD}"
 tags: [{tags}]
@@ -196,14 +211,23 @@ To prune stale learnings, you can run:
 
 This will scan `learnings/` for entries past their decay window and suggest updates or removal.
 
+## Proactive Triggers (`--auto` mode)
+
+Hooks and other skills may suggest `--auto` mode at these moments:
+
+- **After significant git commits** — the `post-tool-use.sh` hook detects commits; learnings that emerged in the work leading to the commit are prime candidates
+- **At session end** — when the stop hook finds capturable content from debugging or research-heavy sessions
+- **After `/brain-evolve`** — when stale or contradictory learnings are discovered, refresh the knowledge base with current understanding
+
 ## Error Handling
 
 | Error | Action |
 |-------|--------|
-| No learnings found in conversation | Tell user, suggest running after a substantive session |
+| No learnings found in conversation | Tell user, suggest running after a substantive session. In `--auto` mode: "No extractable learnings detected. This is normal for routine sessions." |
 | BRAIN_PATH not set | Warn, suggest `/brain-setup` |
 | learnings/ doesn't exist | Create it |
 | Duplicate detected | Offer to merge into existing entry |
+| User declines all candidates | "Got it — nothing captured." Exit gracefully. |
 
 ## Design Principles
 

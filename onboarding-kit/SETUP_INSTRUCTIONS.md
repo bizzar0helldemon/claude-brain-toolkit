@@ -136,12 +136,9 @@ cp -r "CHOSEN_PATH/global-skills/"* ~/.claude/skills/
 
 ## Phase 7: Configure Paths in Skills
 
-Two skill files need the brain vault path set. The user needs to edit:
+> **Note:** `setup.sh` does this automatically. Only follow this phase for a manual install.
 
-1. `~/.claude/skills/daily-note/SKILL.md`
-2. `~/.claude/skills/brain-capture/SKILL.md`
-
-In each file, replace every instance of `{{BRAIN_PATH}}` with the actual brain vault path.
+Several skill files reference the brain vault path via a placeholder. In every `~/.claude/skills/*/SKILL.md`, replace each instance of `{{SET_YOUR_BRAIN_PATH}}` (canonical token; some older files may use `{{BRAIN_PATH}}`) with the actual brain vault path.
 
 **Windows path example:** `C:/Users/TheirName/Documents/claude_brain`
 **Mac/Linux path example:** `/home/theirname/Documents/claude_brain`

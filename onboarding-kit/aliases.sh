@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Claude Brain Toolkit — Shell Aliases (optional)
 #
-# Adds convenience aliases for launching brain-mode sessions.
+# Adds convenience aliases for the brain dashboard and brain-mode sessions.
 # Run this script to install, or source it to preview.
 #
 # Usage:
@@ -10,8 +10,11 @@
 
 # ── Alias definitions ────────────────────────────────────────────
 
-# Standard brain-mode launch
-alias brain='claude --agent brain-mode'
+# Brain dashboard — project launcher, game night, search, health, capture
+alias brain='~/.claude/brain-dashboard.sh'
+
+# Skip the menu: start a brain-mode session in the current directory
+alias brain-here='claude --agent brain-mode'
 
 # Brain-mode with permissions bypass (no tool-use confirmations)
 # ⚠ WARNING: This skips ALL permission prompts. Claude can read, write,
@@ -43,7 +46,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   echo ""
   echo "This will add the following aliases to $RC_FILE:"
   echo ""
-  echo "  brain            → claude --agent brain-mode"
+  echo "  brain            → brain dashboard (projects, game night, search, capture)"
+  echo "  brain-here       → claude --agent brain-mode (skip menu, this directory)"
   echo "  brain-dangerous  → claude --agent brain-mode --dangerously-skip-permissions"
   echo ""
   echo "⚠  brain-dangerous skips ALL permission prompts."
@@ -56,7 +60,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     cat >> "$RC_FILE" << 'EOF'
 
 # Claude Brain Toolkit aliases
-alias brain='claude --agent brain-mode'
+alias brain='~/.claude/brain-dashboard.sh'
+alias brain-here='claude --agent brain-mode'
 alias brain-dangerous='claude --agent brain-mode --dangerously-skip-permissions'
 EOF
     echo "Aliases installed in $RC_FILE"
