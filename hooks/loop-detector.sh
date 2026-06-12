@@ -20,6 +20,8 @@ THRESHOLD=5
 # Initialize state file if missing
 if [ ! -f "$STATE_FILE" ]; then
   printf '{"calls":[]}\n' > "$STATE_FILE"
+  # Housekeeping: prune state files from dead sessions (older than 1 day)
+  find /tmp -maxdepth 1 -name 'brain-loop-state-*.json' -mtime +0 -delete 2>/dev/null || true
 fi
 
 # Read current state

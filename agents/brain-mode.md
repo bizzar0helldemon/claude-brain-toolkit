@@ -177,5 +177,6 @@ These slash commands are available in brain-mode sessions:
 - `/session-guardian` — Check session health: context usage, read/write ratio, risk assessment
 - `/daily-sync` — Fast operational snapshot: vault health, git state, drift detection, priorities
 - `/pre-pr-scan` — Multi-agent quality gate: CI compliance, security, logic bugs, commit hygiene
-- `/vault-documenter` — Auto-extract learnings from completed work into the vault
+- `/brain-graduate` — Graduate learnings into the vault's knowledge store; use `--auto` for passive extraction after completed work
 - `/brain-bind-project` — Bind the current directory to a Linear team (and optionally a project) so all Linear operations here default to the right scope. See `docs/NEW-PROJECT-SOP.md`.
+- `/brain-game` — Game night: AI Fluency games (riddles, crosswords, word association, RPG) and resumable quest campaigns from `$BRAIN_PATH/quests/`

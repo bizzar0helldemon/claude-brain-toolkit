@@ -1,7 +1,7 @@
 ---
 name: brain-audit
 description: Run a vault health check — finds broken links, empty files, naming violations, missing frontmatter, orphaned files, and index drift. Use to maintain vault consistency after scans, intakes, and captures.
-argument-hint: "[area] [fix]" — areas: links, formatting, indexes, orphans, all (default). Add "fix" to auto-repair safe issues.
+argument-hint: "[area] [fix]" — areas: links, formatting, indexes, orphans, cold, all (default). Add "fix" to auto-repair safe issues.
 ---
 
 # Brain Audit Command
@@ -11,7 +11,7 @@ You are running a health check on the Claude Brain vault to find and optionally 
 ## Arguments
 
 Parse `$ARGUMENTS` for:
-- **Area filter:** `links`, `formatting`, `indexes`, `orphans`, or `all` (default if omitted)
+- **Area filter:** `links`, `formatting`, `indexes`, `orphans`, `cold`, or `all` (default if omitted)
 - **Fix mode:** if the word `fix` appears anywhere in arguments, enable fix mode
 
 Examples:
@@ -117,6 +117,35 @@ Find `.md` files that:
 - Have no incoming wiki links from any other file
 - Are not listed in any index
 - Are not top-level structural files (CLAUDE.md, IDENTITY.md, brain-scan-templates.md, MASTER_INDEX.md)
+
+### Phase 5: Cold Storage Report (`cold` area)
+
+The vault should hold knowledge that gets **used**, not just collected. This check finds entries that have never been retrieved.
+
+**Data source:** `{{SET_YOUR_BRAIN_PATH}}/brain-mode/retrieval-log.jsonl` — one JSON record per `/brain-search` invocation: `{ts, query, mode, hits: [relative paths]}`. The brain-search tool writes this automatically.
+
+**Procedure:**
+
+1. If the log doesn't exist or is empty, report: "Retrieval log not yet populated — cold-storage analysis needs ~2 weeks of /brain-search usage before it's meaningful." and skip the rest.
+2. Build the set of all retrieved paths from every `hits` array in the log.
+3. For each content file in `learnings/`, `prompts/`, `synthesis/`, and `projects/` (skip indexes, daily notes, and structural files):
+   - **COLD** — created 60+ days ago (frontmatter `graduated:`/`created:`/`date:`, else file mtime) AND never appears in any `hits` array AND has no incoming wiki links
+   - **COOLING** — created 30–60 days ago and never retrieved (informational only)
+4. For each COLD entry, recommend one of:
+   - **Archive** — move to `archive/` (still searchable, out of active indexes)
+   - **Synthesize** — fold into a `/brain-synthesize` living page, then archive the original
+   - **Keep** — reference material that's legitimately rare-but-critical (user judgment)
+
+**Report format:**
+
+```markdown
+### Cold Storage (N cold, M cooling)
+| Entry | Age | Last Retrieved | Incoming Links | Recommendation |
+|-------|-----|----------------|----------------|----------------|
+| learnings/foo.md | 94d | never | 0 | Archive |
+```
+
+In fix mode, offer to move confirmed COLD entries to `archive/` (one confirmation per batch, never silent).
 
 ## Reporting
 

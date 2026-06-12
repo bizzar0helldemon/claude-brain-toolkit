@@ -407,6 +407,32 @@ def index_vault(vault_path: Path, fts: FTSIndex, vector: VectorIndex = None,
 
 
 # ---------------------------------------------------------------------------
+# Retrieval logging — records which vault entries actually get surfaced.
+# /brain-audit's cold-storage report uses this to flag never-retrieved entries.
+# ---------------------------------------------------------------------------
+
+def log_retrieval(vault_path: str, query: str, mode: str, results: list[dict]):
+    """Append a retrieval record to $BRAIN_PATH/brain-mode/retrieval-log.jsonl.
+
+    Never raises — logging must not break search.
+    """
+    try:
+        import json
+        log_dir = Path(vault_path) / "brain-mode"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        record = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "query": query,
+            "mode": mode,
+            "hits": [r["path"].replace(vault_path + "/", "") for r in results],
+        }
+        with open(log_dir / "retrieval-log.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+    except Exception:
+        pass
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -570,6 +596,8 @@ def main():
     else:
         # FTS only
         results = fts.search(args.query, limit=args.limit, project=args.project, doc_type=args.type)
+
+    log_retrieval(vault_path, args.query, args.mode, results)
 
     if args.json:
         import json
