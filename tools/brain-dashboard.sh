@@ -15,6 +15,8 @@
 #   brain <query...>      → skip menu, search the vault
 #
 # Project registry: $BRAIN_PATH/brain-mode/projects.tsv  (name<TAB>path)
+# Ignore list:      $BRAIN_PATH/brain-mode/projects-ignore.tsv  (one path/line)
+#                   — hides auto-discovered repos that aren't real projects
 # Auto-discovery:   git repos one level under $BRAIN_PROJECT_DIRS
 #                   (default: ~/Documents ~/projects ~/dev ~/code)
 
@@ -31,6 +33,7 @@ if ! command -v fzf >/dev/null 2>&1; then
 fi
 
 REGISTRY="$BRAIN_PATH/brain-mode/projects.tsv"
+IGNORE="$BRAIN_PATH/brain-mode/projects-ignore.tsv"   # one path per line; hides auto-discovered repos
 SCAN_DIRS="${BRAIN_PROJECT_DIRS:-$HOME/Documents $HOME/projects $HOME/dev $HOME/code}"
 LAUNCH_DIR="$PWD"
 
@@ -87,7 +90,19 @@ project_list() {
         printf '%s\t%s\n' "$proj_name" "$proj_dir"
       done
     done
-  } | awk -F'\t' '!seen[$2]++' | sort -f
+  } | awk -F'\t' '!seen[$2]++' | filter_ignored | sort -f
+}
+
+# ── Drop any entry whose path is on the ignore list ──────────────
+filter_ignored() {
+  if [ -s "$IGNORE" ]; then
+    awk -F'\t' '
+      NR==FNR { if ($0 !~ /^[[:space:]]*(#|$)/) ignore[$0]=1; next }
+      !($2 in ignore)
+    ' "$IGNORE" -
+  else
+    cat
+  fi
 }
 
 # ── Actions ──────────────────────────────────────────────────────
@@ -185,6 +200,38 @@ do_register() {
   fi
 }
 
+# Remove a project from the launcher. Registry entries are deleted from the
+# TSV; auto-discovered git repos can't be "deleted", so their path is added to
+# the ignore list to keep them off the list (the repo on disk is untouched).
+do_unregister() {
+  local pick dir
+  pick=$(project_list | awk -F'\t' '{printf "%-32s %s\n", $1, $2}' | \
+         fzf --height=60% --reverse --prompt="remove ▸ " \
+             --header="Select a project to remove from the launcher (files are NOT deleted)") || return
+  dir=$(printf '%s' "$pick" | awk '{print $NF}')
+  [ -n "$dir" ] || return
+
+  local removed=0
+  # Drop matching registry line(s) by path (column 2).
+  if [ -f "$REGISTRY" ] && grep -qF "	$dir" "$REGISTRY"; then
+    local tmp; tmp="$(mktemp)"
+    awk -F'\t' -v d="$dir" '$2 != d' "$REGISTRY" > "$tmp" && mv "$tmp" "$REGISTRY"
+    echo "  ✓ unregistered: $dir"
+    removed=1
+  fi
+  # If it still shows up (auto-discovered repo), hide it via the ignore list.
+  if project_list | awk -F'\t' '{print $2}' | grep -qxF "$dir"; then
+    mkdir -p "$(dirname "$IGNORE")"
+    if ! { [ -f "$IGNORE" ] && grep -qxF "$dir" "$IGNORE"; }; then
+      printf '%s\n' "$dir" >> "$IGNORE"
+      echo "  ✓ hidden auto-discovered repo: $dir"
+      echo "    (un-hide later by deleting its line in $IGNORE)"
+    fi
+    removed=1
+  fi
+  [ "$removed" -eq 1 ] || echo "  ~ nothing to remove for: $dir"
+}
+
 # ── Direct modes ─────────────────────────────────────────────────
 if [ "${1:-}" = "here" ]; then do_brain_here; fi
 if [ $# -gt 0 ]; then
@@ -202,6 +249,7 @@ while true; do
       "📊 Vault health            — quick stats snapshot" \
       "⚡ Quick capture           — drop a note into the inbox" \
       "➕ Register project        — add a directory to the launcher" \
+      "➖ Remove project          — drop a directory from the launcher" \
       "🚪 Quit" | \
     fzf --height=60% --reverse --prompt="🧠 brain ▸ " \
         --header="Brain Dashboard — $(basename "$BRAIN_PATH")") || exit 0
@@ -214,6 +262,7 @@ while true; do
     📊*) do_health ;;
     ⚡*) do_capture ;;
     ➕*) do_register ;;
+    ➖*) do_unregister ;;
     🚪*) exit 0 ;;
   esac
 done

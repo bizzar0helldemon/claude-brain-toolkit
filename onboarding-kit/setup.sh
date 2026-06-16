@@ -141,15 +141,18 @@ echo "  + statusline.sh deployed to $CLAUDE_DIR/"
 echo ""
 
 # ---- Phase 5a: Deploy dashboard + search tools ----
-echo "[5a/9] Deploying brain dashboard and search tools..."
+# These are the toolkit executables under active development, so they are
+# symlinked (not copied) — edits to the repo are live immediately, with no
+# re-run of setup.sh needed. ln -sf replaces any prior plain-copy deploy.
+echo "[5a/9] Linking brain dashboard and search tools..."
 
 mkdir -p "$CLAUDE_DIR/tools"
-cp "$REPO_DIR/tools/brain-dashboard.sh" "$CLAUDE_DIR/brain-dashboard.sh"
-cp "$REPO_DIR/tools/brain-search" "$CLAUDE_DIR/tools/brain-search"
-cp "$REPO_DIR/tools/brain-search.py" "$CLAUDE_DIR/tools/brain-search.py"
-chmod +x "$CLAUDE_DIR/brain-dashboard.sh" "$CLAUDE_DIR/tools/brain-search"
-echo "  + brain-dashboard.sh deployed to $CLAUDE_DIR/ (alias: brain)"
-echo "  + tools/brain-search + brain-search.py deployed to $CLAUDE_DIR/tools/"
+ln -sf "$REPO_DIR/tools/brain-dashboard.sh" "$CLAUDE_DIR/brain-dashboard.sh"
+ln -sf "$REPO_DIR/tools/brain-search"       "$CLAUDE_DIR/tools/brain-search"
+ln -sf "$REPO_DIR/tools/brain-search.py"    "$CLAUDE_DIR/tools/brain-search.py"
+chmod +x "$REPO_DIR/tools/brain-dashboard.sh" "$REPO_DIR/tools/brain-search"
+echo "  + brain-dashboard.sh symlinked to $CLAUDE_DIR/ (alias: brain)"
+echo "  + tools/brain-search + brain-search.py symlinked to $CLAUDE_DIR/tools/"
 
 echo ""
 
