@@ -58,11 +58,53 @@ fi
 
 > **Note: On Windows with Git Bash**, shell profile files may not be loaded by hooks (non-interactive subshells bypass `.bashrc`/`.zshrc`). The `settings.json` env block is the primary reliable channel for delivering `BRAIN_PATH` to hooks on Windows. The shell profile export is a convenience for interactive terminal use — add it, but don't depend on it alone.
 
-3. Show confirmation:
-   > "Vault created at `<path>`. BRAIN_PATH written to `settings.json` and `<profile>`."
+**d. Seed the identity profile.** Every brain has an `IDENTITY.md` — the document that tells Claude who the user is (not just their code). Create it now if absent so the user has something to fill via `/brain-intake`:
 
-4. Instruct the user to restart Claude Code:
-   > "Please restart Claude Code (`/exit` then `claude`) so the new BRAIN_PATH takes effect. After restarting, brain mode will load vault context automatically."
+```bash
+if [ ! -f "$BRAIN_PATH_VALUE/IDENTITY.md" ]; then
+  if [ -f "$BRAIN_PATH_VALUE/IDENTITY.template.md" ]; then
+    cp "$BRAIN_PATH_VALUE/IDENTITY.template.md" "$BRAIN_PATH_VALUE/IDENTITY.md"
+  else
+    cat > "$BRAIN_PATH_VALUE/IDENTITY.md" <<'IDENTITY_EOF'
+---
+title: "Identity Profile"
+type: identity
+tags: [identity, personal, profile]
+---
+
+# Identity Profile
+
+> Who you are as a person, not just your code. Fill this in through `/brain-intake` sessions or by editing directly.
+
+## Life Story
+
+> [NEEDS INTAKE] Background, formative experiences, what shaped you.
+
+## Career History
+
+> [NEEDS INTAKE] Professional path, roles, what you've built.
+
+## Creative Voice
+
+> [NEEDS INTAKE] What you make, why you make it, your aesthetic.
+
+## Values & Worldview
+
+> [NEEDS INTAKE] What you believe and how you see the world.
+
+## Communication Preferences
+
+> [NEEDS INTAKE] Tone, length, challenge level, humor, pet peeves.
+IDENTITY_EOF
+  fi
+fi
+```
+
+3. Show confirmation:
+   > "Vault created at `<path>`. BRAIN_PATH written to `settings.json` and `<profile>`. Seeded an empty `IDENTITY.md`."
+
+4. Instruct the user to restart Claude Code, then point them at intake:
+   > "Please restart Claude Code (`/exit` then `claude`) so the new BRAIN_PATH takes effect. After restarting, run **`/brain-intake`** to tell the brain who you are — or **`/brain-onboard`** for the full guided walkthrough (identity → discover existing content → process inbox → catalog projects)."
 
 ---
 
@@ -76,5 +118,5 @@ fi
    > "Your BRAIN_PATH is set to `$BRAIN_PATH` but that directory doesn't exist."
 
 2. Offer two choices:
-   - **Create it at the current path** — run `mkdir -p "$BRAIN_PATH"`, then confirm: "Directory created. No restart needed — BRAIN_PATH is already configured."
+   - **Create it at the current path** — run `mkdir -p "$BRAIN_PATH"`, then seed the identity profile (run the same `IDENTITY.md` seeding block from Case A step 2d, using `$BRAIN_PATH` in place of `$BRAIN_PATH_VALUE`). Confirm: "Directory created and `IDENTITY.md` seeded. No restart needed — BRAIN_PATH is already configured. Run `/brain-intake` to tell the brain who you are, or `/brain-onboard` for the full guided walkthrough."
    - **Update BRAIN_PATH to a new location** — follow Case A flow from step 1.
