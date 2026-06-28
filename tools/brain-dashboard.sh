@@ -143,6 +143,15 @@ do_game_night() {
   launch_terminal "$BRAIN_PATH" "$BRAIN_CMD '$prompt'"
 }
 
+# ── Onboarding actions ───────────────────────────────────────────
+# Each opens a new window at the vault running a brain session that fires
+# the relevant skill — same pattern as game night.
+do_onboard()  { launch_terminal "$BRAIN_PATH" "$BRAIN_CMD '/brain-onboard'"; }
+do_intake()   { launch_terminal "$BRAIN_PATH" "$BRAIN_CMD '/brain-intake'"; }
+do_discover() { launch_terminal "$BRAIN_PATH" "$BRAIN_CMD '/brain-discover'"; }
+do_inbox()    { launch_terminal "$BRAIN_PATH" "$BRAIN_CMD '/brain-inbox'"; }
+do_catalog()  { launch_terminal "$BRAIN_PATH" "$BRAIN_CMD '/brain-scan'"; }
+
 do_search() {
   local tool query
   tool=$(find_search_tool) || { echo "  ! brain-search tool not found."; read -rp "  [enter] "; return; }
@@ -242,19 +251,32 @@ fi
 # ── Main menu loop ───────────────────────────────────────────────
 while true; do
   CHOICE=$(printf '%s\n' \
+      "  ── Onboarding ──────────────────────────────" \
+      "🎬 Onboard me (guided)     — full walkthrough: identity → content → projects" \
+      "👤 Tell the brain who you are — guided identity interview" \
+      "🔭 Discover my content     — scan a drive for writing/scripts/audio" \
+      "📥 Process inbox           — file loose drops into the vault" \
+      "📂 Catalog a project       — add/refresh a project note in the brain" \
+      "  ── Work ────────────────────────────────────" \
       "🚀 Launch project          — new window, brain session in project dir" \
       "🧠 Brain session here      — start claude brain-mode in $LAUNCH_DIR" \
-      "🎮 Game night              — riddles, crosswords, Neural Archive quest" \
       "🔍 Search vault            — full-text + semantic search" \
-      "📊 Vault health            — quick stats snapshot" \
       "⚡ Quick capture           — drop a note into the inbox" \
+      "  ── Maintain ────────────────────────────────" \
+      "📊 Vault health            — quick stats snapshot" \
+      "🎮 Game night              — riddles, crosswords, Neural Archive quest" \
       "➕ Register project        — add a directory to the launcher" \
       "➖ Remove project          — drop a directory from the launcher" \
       "🚪 Quit" | \
-    fzf --height=60% --reverse --prompt="🧠 brain ▸ " \
+    fzf --height=70% --reverse --prompt="🧠 brain ▸ " \
         --header="Brain Dashboard — $(basename "$BRAIN_PATH")") || exit 0
 
   case "$CHOICE" in
+    🎬*) do_onboard ;;
+    👤*) do_intake ;;
+    🔭*) do_discover ;;
+    📥*) do_inbox ;;
+    📂*) do_catalog ;;
     🚀*) do_launch_project ;;
     🧠*) do_brain_here ;;
     🎮*) do_game_night ;;
@@ -264,5 +286,6 @@ while true; do
     ➕*) do_register ;;
     ➖*) do_unregister ;;
     🚪*) exit 0 ;;
+    *) : ;;  # section dividers and anything else — no-op, re-render menu
   esac
 done
