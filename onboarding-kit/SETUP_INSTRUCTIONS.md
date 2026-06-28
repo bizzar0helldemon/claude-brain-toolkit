@@ -256,7 +256,10 @@ Once set up, these are the most useful commands:
 
 | Command | What It Does |
 |---------|-------------|
+| `/brain-onboard` | Guided first-time walkthrough (identity → content → projects); `--quick` for identity only |
 | `/brain-intake` | Guided interview — teach Claude about yourself |
+| `/brain-discover [path]` | Scan a drive for existing writing/scripts/audio not yet in the brain |
+| `/brain-inbox` | Process loose files dropped into the vault |
 | `/brain-scan [path]` | Catalog a project into the brain |
 | `/daily-note [text]` | Quick journal entry |
 | `/brain-capture` | Save effective prompts from the current conversation |
