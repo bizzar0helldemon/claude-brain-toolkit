@@ -23,6 +23,19 @@ Everything runs through Claude Code's hook system. You just work normally.
 - [jq](https://jqlang.github.io/jq/download/) (JSON processing)
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`)
 
+### Platform Support
+
+The toolkit is built on bash and POSIX tooling (`sed`, `grep`, `awk`, `mktemp`, `/tmp`, symlinks, `chmod`).
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| **Linux** | ✅ Supported | |
+| **macOS** | ✅ Supported | |
+| **Windows (WSL)** | ✅ Supported | Use [WSL](https://learn.microsoft.com/windows/wsl/install). Keep the repo and your vault on the Linux filesystem (`~/`), **not** `/mnt/c/...`, for speed. |
+| **Windows (native)** | ❌ Not supported | PowerShell/cmd lack bash; Git Bash / MSYS / Cygwin only partially work (missing GNU tools, unreliable symlinks). |
+
+> **Windows users:** install WSL and run the toolkit from inside it. `setup.sh` runs a platform preflight — on a native Windows shell it warns, links to the WSL docs, and prompts before continuing rather than failing halfway through.
+
 ### Install
 
 ```bash
