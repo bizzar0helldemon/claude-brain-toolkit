@@ -167,6 +167,38 @@ echo "  + brain-relocate.md deployed to $CLAUDE_DIR/commands/brain/"
 
 echo ""
 
+# ---- Phase 5c: Stage the vault skeleton ----
+# /brain-setup runs INSIDE Claude (after the user picks a BRAIN_PATH) and cannot
+# reliably locate this repo. So we stage a vault skeleton at a known location now;
+# brain-setup copies it into the new vault on creation. This is what gives a fresh
+# vault its canonical templates (brain-scan-templates.md) and index files — without
+# them, brain-scan / brain-inbox / brain-intake run without their templates.
+echo "[5c/9] Staging vault skeleton..."
+
+SKEL="$CLAUDE_DIR/brain-skeleton"
+rm -rf "$SKEL"
+mkdir -p "$SKEL"
+
+# Canonical template + index files (copy only those present in the repo)
+for REL in brain-scan-templates.md IDENTITY.template.md \
+           projects/_INDEX.md creative/_INDEX.md intake/_INDEX.md prompts/_INDEX.md; do
+  if [ -f "$REPO_DIR/$REL" ]; then
+    mkdir -p "$SKEL/$(dirname "$REL")"
+    cp "$REPO_DIR/$REL" "$SKEL/$REL"
+  fi
+done
+
+# Empty structural directories (kept with .gitkeep so the layout exists)
+for DIR in inbox daily_notes archive people learnings synthesis \
+           intake/sessions intake/discoveries; do
+  mkdir -p "$SKEL/$DIR"
+  : > "$SKEL/$DIR/.gitkeep"
+done
+
+echo "  + vault skeleton staged at $SKEL"
+
+echo ""
+
 # ---- Phase 6: Merge brain hooks into ~/.claude/settings.json ----
 echo "[6/9] Updating ~/.claude/settings.json..."
 

@@ -23,7 +23,7 @@ export BRAIN_PATH="{{SET_YOUR_BRAIN_PATH}}"
 > - **Technical:** [YOUR TECH STACK — languages, frameworks, tools you use]
 > - **Projects:** [N] projects across [M] categories — see [[Project Index]]
 >
-> *Run `/brain-intake` to fill this section with real personal details.*
+> *Run `/brain-onboard` for the full guided walkthrough, or `/brain-intake` to fill this section with real personal details.*
 
 ---
 

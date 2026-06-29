@@ -33,7 +33,7 @@ bash onboarding-kit/setup.sh
 
 The setup script:
 1. Deploys the `brain-mode` agent to `~/.claude/agents/`
-2. Installs all global skills (15 skills)
+2. Installs all global skills (23 skills)
 3. Deploys all hook scripts to `~/.claude/hooks/` (9 hooks + 2 libraries)
 4. Registers hooks in `~/.claude/settings.json` (idempotent — safe to re-run)
 5. Deploys slash commands and the statusline script
@@ -120,6 +120,17 @@ Row 1: Brain branding, repo + branch (with worktree detection), model name
 Row 2: Brain state, context bar (color-coded), lines changed, dirty files, session duration
 
 ## Commands
+
+### Onboarding & Identity
+
+| Command | What It Does |
+|---------|-------------|
+| `/brain-onboard` | Guided first-time walkthrough — identity → discover content → process inbox → catalog projects (`--quick` for identity only) |
+| `/brain-intake` | Guided conversational interview — teach the brain who you are; populates `IDENTITY.md` |
+| `/brain-discover [path]` | Scan a drive for existing writing/scripts/lyrics/audio not yet in the brain |
+| `/brain-inbox` | Process loose files dropped into the vault and route them to their homes |
+| `/brain-scan [path]` | Catalog a project directory into `projects/` + index |
+| `/brain-update [name]` | Refresh an existing project's brain entry after more work |
 
 ### Knowledge Management
 
@@ -223,6 +234,12 @@ claude-brain-toolkit/
       brain-path.sh             # Shared utilities
       brain-context.sh          # Vault context builder
   global-skills/
+    brain-onboard/              # Guided first-time onboarding walkthrough
+    brain-intake/               # Identity interview -> IDENTITY.md
+    brain-discover/             # Drive scan for existing creative content
+    brain-inbox/                # Process & route loose vault files
+    brain-scan/                 # Catalog a project into the brain
+    brain-update/               # Refresh an existing project entry
     brain-capture/              # Pattern extraction
     brain-graduate/             # Knowledge graduation (manual + --auto passive extraction)
     brain-investigate/          # Structured debugging

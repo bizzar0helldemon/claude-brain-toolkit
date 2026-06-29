@@ -222,6 +222,7 @@ Use this table when introducing CLI equivalents in conversation.
 |---|---|---|
 | "Log a daily note" | `/daily-note [text]` | Creates/appends to daily note file with timestamp |
 | "Catalog a project" | `/brain-scan [path]` | Reads project dir, creates summary, updates index |
+| "Get me set up / onboard me" | `/brain-onboard` | Guided walkthrough: identity → discover → inbox → projects |
 | "Tell me about myself" | `/brain-intake [topic]` | Guided interview, populates IDENTITY.md |
 | "Find uncataloged work" | `/brain-discover [path]` | Scans drives for content not in the brain |
 | "Update a project" | `/brain-update [name]` | Re-reads source, updates summary and archive |

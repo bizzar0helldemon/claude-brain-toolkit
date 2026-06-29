@@ -4,7 +4,9 @@ daily_notes/*.md
 intake/sessions/*.md
 intake/discoveries/*.md
 people/*.md
+# Personal identity profile stays local; the blank template (IDENTITY.template.md) ships.
 IDENTITY.md
+!IDENTITY.template.md
 
 # Vault template directories (scaffolding — not part of the toolkit)
 portfolio/
@@ -19,7 +21,11 @@ archive/
 # Internal development planning (GSD phase plans, research, state)
 .planning/
 
-# Personal dev skills (not part of the toolkit distribution)
+# Local-dev-only skills. IMPORTANT: distributable toolkit skills live in
+# global-skills/ (tracked + deployed by setup.sh). This directory is ONLY for
+# personal/local skills that must not ship. Never put toolkit skills here — an
+# over-broad ignore on this path is exactly what dropped brain-intake and the
+# other ingestion skills from distribution in the b8a3f71 cleanup.
 .claude/skills/
 
 # Local dev overrides (never ship to users)
