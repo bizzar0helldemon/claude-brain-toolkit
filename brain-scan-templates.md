@@ -12,6 +12,7 @@ Used for files in `projects/[category]/[project-slug].md`:
 ---
 title: [Project Name]
 type: project
+project: [repo-folder-name]
 category: [category]
 status: [status]
 location: "[drive:\path\to\project\]"

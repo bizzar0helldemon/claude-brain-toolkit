@@ -61,6 +61,8 @@ projects/[category]/[project-slug].md
 
 Follow the **Project Summary Template** from `brain-scan-templates.md` exactly. Include frontmatter with `tags:`, `type:`, `status:`, and `related:` fields.
 
+**Set the `project:` field to the scanned directory's git-repo basename** (e.g. a repo at `~/code/sample-app` → `project: sample-app`). The session-start hook matches project notes to the current repo via this field — without it, the cataloged project will NOT surface in the brain banner. Use the repo folder name as-is; the hook also matches common suffix-stripped variants (`-dev`, `-api`, etc.).
+
 ### Step 5: Update Project Index
 Add or update a row in `projects/_INDEX.md` following the table format in the templates. Use `[[wiki links]]` for the project name.
 

@@ -87,7 +87,7 @@ If the user declines, stop here.
 Using the templates from `brain-scan-templates.md` (in the brain root directory), regenerate:
 
 1. **Archive** — Overwrite `archive/raw-claude-mds/[category]/[slug]-CLAUDE.md` with the fresh CLAUDE.md content
-2. **Summary** — Overwrite `projects/[category]/[slug].md` using the Project Summary Template (include frontmatter with tags, type, status, related)
+2. **Summary** — Overwrite `projects/[category]/[slug].md` using the Project Summary Template (include frontmatter with tags, type, status, related, and `project:` set to the repo-folder basename so the session-start hook surfaces this note; preserve an existing `project:` value if present)
 3. **Project index row** — Update the matching row in `projects/_INDEX.md` using `[[wiki links]]` for the project name (preserve all other rows, update footer counts if status changed)
 
 **Important formatting rules:**
