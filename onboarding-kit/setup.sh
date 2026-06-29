@@ -17,6 +17,58 @@ echo "  Claude Brain Toolkit — Brain Mode Setup"
 echo "=========================================="
 echo ""
 
+# ---- Phase 0: Platform preflight ----
+# The toolkit is built on bash + POSIX tooling (sed, grep, awk, mktemp,
+# symlinks, /tmp). It runs cleanly on Linux, macOS, and WSL. Native Windows
+# shells (Git Bash / MSYS / Cygwin) are only partially supported, so warn
+# early rather than fail halfway through with confusing errors.
+UNAME_S="$(uname -s 2>/dev/null || echo unknown)"
+UNAME_R="$(uname -r 2>/dev/null || echo unknown)"
+
+is_wsl() {
+  # WSL reports a Linux kernel string containing "microsoft" / "WSL".
+  case "$UNAME_R" in
+    *[Mm]icrosoft*|*WSL*) return 0 ;;
+  esac
+  [ -f /proc/version ] && grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null
+}
+
+case "$UNAME_S" in
+  MINGW*|MSYS*|CYGWIN*)
+    echo "  ! Detected a native Windows shell ($UNAME_S)."
+    echo ""
+    echo "    This toolkit depends on bash + POSIX tools (sed, grep, awk, symlinks,"
+    echo "    mktemp, /tmp) that are missing or unreliable on native Windows. Setup"
+    echo "    and the hooks are likely to fail partway through."
+    echo ""
+    echo "    Strongly recommended: install WSL (Windows Subsystem for Linux) and run"
+    echo "    this toolkit from inside the Linux filesystem (~/, not /mnt/c/...):"
+    echo "      https://learn.microsoft.com/windows/wsl/install"
+    echo ""
+    if [ -t 0 ]; then
+      printf "    Continue anyway on this Windows shell? [y/N] "
+      read -r REPLY
+      case "$REPLY" in
+        [yY]|[yY][eE][sS]) echo "    Continuing — some steps may fail." ; echo "" ;;
+        *) echo "    Aborting. Install WSL and re-run from there." ; exit 1 ;;
+      esac
+    else
+      echo "    Non-interactive shell — aborting. Re-run inside WSL, or set"
+      echo "    BRAIN_FORCE_WINDOWS=1 to override this check."
+      [ "${BRAIN_FORCE_WINDOWS:-}" = "1" ] || exit 1
+      echo "    BRAIN_FORCE_WINDOWS=1 set — continuing; some steps may fail."
+      echo ""
+    fi
+    ;;
+  *)
+    if is_wsl; then
+      echo "  + WSL detected — running in a Linux environment. Tip: keep the repo and"
+      echo "    your vault on the Linux filesystem (~/), not /mnt/c/..., for speed."
+      echo ""
+    fi
+    ;;
+esac
+
 # ---- Helper: check for required command ----
 check_cmd() {
   if command -v "$1" &>/dev/null; then
