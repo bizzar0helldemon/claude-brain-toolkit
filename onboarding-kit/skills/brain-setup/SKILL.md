@@ -58,7 +58,18 @@ fi
 
 > **Note: On Windows with Git Bash**, shell profile files may not be loaded by hooks (non-interactive subshells bypass `.bashrc`/`.zshrc`). The `settings.json` env block is the primary reliable channel for delivering `BRAIN_PATH` to hooks on Windows. The shell profile export is a convenience for interactive terminal use — add it, but don't depend on it alone.
 
-**d. Seed the identity profile.** Every brain has an `IDENTITY.md` — the document that tells Claude who the user is (not just their code). Create it now if absent so the user has something to fill via `/brain-intake`:
+**d. Scaffold the vault from the skeleton.** `setup.sh` staged canonical templates and index files at `~/.claude/brain-skeleton/`. Copy them into the new vault so skills like `brain-scan`, `brain-inbox`, and `brain-intake` have their templates (`brain-scan-templates.md`, the `_INDEX.md` files, structural dirs). Non-destructive — never overwrite files the user already has:
+
+```bash
+SKEL="$HOME/.claude/brain-skeleton"
+if [ -d "$SKEL" ]; then
+  cp -rn "$SKEL"/. "$BRAIN_PATH_VALUE"/   # -n = no-clobber; .gitkeep files keep empty dirs
+fi
+```
+
+If the skeleton directory is absent (older install), continue — the next step still seeds `IDENTITY.md` directly.
+
+**e. Seed the identity profile.** Every brain has an `IDENTITY.md` — the document that tells Claude who the user is (not just their code). Create it now if absent so the user has something to fill via `/brain-intake`:
 
 ```bash
 if [ ! -f "$BRAIN_PATH_VALUE/IDENTITY.md" ]; then
@@ -118,5 +129,5 @@ fi
    > "Your BRAIN_PATH is set to `$BRAIN_PATH` but that directory doesn't exist."
 
 2. Offer two choices:
-   - **Create it at the current path** — run `mkdir -p "$BRAIN_PATH"`, then seed the identity profile (run the same `IDENTITY.md` seeding block from Case A step 2d, using `$BRAIN_PATH` in place of `$BRAIN_PATH_VALUE`). Confirm: "Directory created and `IDENTITY.md` seeded. No restart needed — BRAIN_PATH is already configured. Run `/brain-intake` to tell the brain who you are, or `/brain-onboard` for the full guided walkthrough."
+   - **Create it at the current path** — run `mkdir -p "$BRAIN_PATH"`, then scaffold from the skeleton and seed the identity profile (run the Case A step 2d scaffold block and step 2e `IDENTITY.md` seeding block, using `$BRAIN_PATH` in place of `$BRAIN_PATH_VALUE`). Confirm: "Directory created, scaffolded from skeleton, and `IDENTITY.md` seeded. No restart needed — BRAIN_PATH is already configured. Run `/brain-intake` to tell the brain who you are, or `/brain-onboard` for the full guided walkthrough."
    - **Update BRAIN_PATH to a new location** — follow Case A flow from step 1.
