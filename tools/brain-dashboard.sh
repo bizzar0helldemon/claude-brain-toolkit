@@ -60,10 +60,13 @@ launch_terminal() {
     # Use a temp launcher script so wt.exe never sees ';' (its tab/pane delimiter).
     local _bs; _bs="$(mktemp /tmp/brain-launch.XXXXXX.sh)"
     { printf 'cd %q\n' "$dir"; printf '%s\n' "$cmd"; printf 'rm -f %q\n' "$_bs"; printf 'exec ${SHELL:-bash}\n'; } > "$_bs"
+    local _title; _title="$(basename "$dir")"
     if [ -n "${WSL_DISTRO_NAME:-}" ]; then
-      wt.exe -w new new-tab wsl.exe -d "$WSL_DISTRO_NAME" -- bash -ic "source '$_bs'" >/dev/null 2>&1 &
+      # -p "$WSL_DISTRO_NAME" gives the tab the distro's profile (icon/colors) instead
+      # of the default profile's; WSL auto-generates a profile matching the distro name.
+      wt.exe -w new new-tab -p "$WSL_DISTRO_NAME" --title "$_title" wsl.exe -d "$WSL_DISTRO_NAME" -- bash -ic "source '$_bs'" >/dev/null 2>&1 &
     else
-      wt.exe -w new new-tab wsl.exe -- bash -ic "source '$_bs'" >/dev/null 2>&1 &
+      wt.exe -w new new-tab --title "$_title" wsl.exe -- bash -ic "source '$_bs'" >/dev/null 2>&1 &
     fi
   elif command -v kitty >/dev/null 2>&1; then
     kitty --detach --directory "$dir" "${SHELL:-bash}" -ic "$cmd; exec ${SHELL:-bash}" &
