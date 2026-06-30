@@ -55,7 +55,17 @@ launch_terminal() {
   local cmd="$*"
   local wrapped="cd '$dir' && $cmd; exec \${SHELL:-bash}"
 
-  if command -v kitty >/dev/null 2>&1; then
+  if grep -qiE '(microsoft|wsl)' /proc/version 2>/dev/null && command -v wt.exe >/dev/null 2>&1; then
+    # WSL2: no Linux GUI terminal — open a new Windows Terminal tab via wt.exe.
+    # Use a temp launcher script so wt.exe never sees ';' (its tab/pane delimiter).
+    local _bs; _bs="$(mktemp /tmp/brain-launch.XXXXXX.sh)"
+    { printf 'cd %q\n' "$dir"; printf '%s\n' "$cmd"; printf 'rm -f %q\n' "$_bs"; printf 'exec ${SHELL:-bash}\n'; } > "$_bs"
+    if [ -n "${WSL_DISTRO_NAME:-}" ]; then
+      wt.exe -w new new-tab wsl.exe -d "$WSL_DISTRO_NAME" -- bash -ic "source '$_bs'" >/dev/null 2>&1 &
+    else
+      wt.exe -w new new-tab wsl.exe -- bash -ic "source '$_bs'" >/dev/null 2>&1 &
+    fi
+  elif command -v kitty >/dev/null 2>&1; then
     kitty --detach --directory "$dir" "${SHELL:-bash}" -ic "$cmd; exec ${SHELL:-bash}" &
   elif command -v gnome-terminal >/dev/null 2>&1; then
     gnome-terminal --working-directory="$dir" -- bash -ic "$cmd; exec bash" &
