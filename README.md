@@ -2,6 +2,38 @@
 
 A persistent knowledge layer for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Brain mode gives Claude memory across sessions — it loads your past context at startup, captures what you learn as you work, and surfaces relevant knowledge when you need it.
 
+## See It In Action
+
+Run `brain` for the launcher dashboard — pick a project and it opens in a new window with a brain-mode session ready:
+
+![Brain launcher dashboard](assets/screenshots/dashboard.svg)
+
+Pick one and it opens in a fresh window, cd'd into the project with memory already loading:
+
+![Project launched in a new window](assets/screenshots/dashboard-launch.svg)
+
+Memory loads before you type — projects, pitfalls, and patterns are already in context:
+
+![Session start — vault context loads automatically](assets/screenshots/session-start.svg)
+
+Hit an error you've seen before, and the fix comes back with it:
+
+![Error pattern recall — past solution surfaces on failure](assets/screenshots/error-recall.svg)
+
+Destructive commands and secret leaks are blocked before they run:
+
+![Safety hooks — dangerous command and secret commit blocked](assets/screenshots/safety-hooks.svg)
+
+When the session ends, useful knowledge is written to the vault for you — no command to run:
+
+![Silent capture — learnings written to the vault automatically](assets/screenshots/capture.svg)
+
+A two-row statusline keeps brain state, git, context, and session metrics in view:
+
+![Two-row branded statusline](assets/screenshots/statusline.svg)
+
+> These are illustrative mockups with placeholder data — your real sessions use your own projects and vault.
+
 ## What It Does
 
 Without brain mode, every Claude Code session starts from zero. With it:
