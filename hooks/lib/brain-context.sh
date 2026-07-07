@@ -366,6 +366,53 @@ _is_pitfall_entry() {
 #   $1 — current working directory
 # Output: file paths (stdout), one per line
 # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# _is_decayed <file>
+#
+# Returns 0 if the note's frontmatter status is archive or tombstone — the
+# gardener has demoted it out of the injection set. Such notes stay on disk
+# and remain searchable, but must not consume session-start budget.
+# ------------------------------------------------------------------------------
+_is_decayed() {
+  local file="$1"
+  local st
+  st=$(get_frontmatter_field "status" "$file")
+  if [ "$st" = "archive" ] || [ "$st" = "tombstone" ]; then
+    return 0
+  fi
+  return 1
+}
+
+# ------------------------------------------------------------------------------
+# log_surfaced_entries <cwd> <file>...
+#
+# Append one surface event per injected note to brain-mode/surface-log.jsonl.
+# This is the write side of the feedback loop the gardener folds. Best-effort:
+# never fails the caller. A per-invocation session token lets the gardener
+# count distinct sessions for promotion.
+# ------------------------------------------------------------------------------
+log_surfaced_entries() {
+  local cwd="$1"; shift
+  [ -d "${BRAIN_PATH:-}" ] || return 0
+
+  local logfile="$BRAIN_PATH/brain-mode/surface-log.jsonl"
+  mkdir -p "$BRAIN_PATH/brain-mode" 2>/dev/null || return 0
+
+  local ts session project f rel
+  ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  session="${CLAUDE_SESSION_ID:-$(date -u +%s)-$$}"
+  project=$(get_project_name "$cwd" 2>/dev/null | awk '{print $1}')
+
+  for f in "$@"; do
+    rel="${f#"${BRAIN_PATH}"/}"
+    jq -cn --arg ts "$ts" --arg session "$session" --arg project "$project" \
+      --arg path "$rel" \
+      '{ts:$ts,session:$session,project:$project,path:$path}' \
+      >> "$logfile" 2>/dev/null || true
+  done
+  return 0
+}
+
 collect_vault_entries() {
   local cwd="$1"
 
@@ -401,6 +448,11 @@ collect_vault_entries() {
 
     # Skip hidden directory paths
     if printf '%s' "$file" | grep -q '/\.' ; then
+      continue
+    fi
+
+    # Skip notes the gardener has decayed out of the injection set.
+    if _is_decayed "$file"; then
       continue
     fi
 
@@ -692,6 +744,13 @@ ${content}"
       pitfall_count=$(( pitfall_count + 1 ))
     fi
   done
+
+  # Feedback loop (write side): log every surfaced note so the gardener can
+  # later measure "was this ever useful". Only for real startup injection —
+  # compact replays are not fresh surfaces.
+  if [ "$source" != "compact" ] && [ "${#loaded_files[@]}" -gt 0 ]; then
+    log_surfaced_entries "$cwd" "${loaded_files[@]}"
+  fi
 
   # Prepend .brain.md if present
   if [ -n "$brain_md_content" ]; then

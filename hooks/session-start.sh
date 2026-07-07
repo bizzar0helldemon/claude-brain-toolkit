@@ -180,4 +180,17 @@ fi
 ENTRY_COUNT="${#_LOADED_FILES[@]}"
 brain_log_error "SessionStart" "Brain context loaded (source: $SOURCE, entries: $ENTRY_COUNT, project: $PROJECT_NAME)"
 
+# --- Lazy gardener trigger: weekly decay/promotion pass, backgrounded ---
+# Never blocks session start. Runs at most once per 7 days (stamp-file gated).
+GARDENER="$HOME/.claude/tools/brain-gardener.py"
+GARDENER_STAMP="$BRAIN_PATH/brain-mode/.brain-gardener-last"
+if [ "$SOURCE" != "compact" ] && [ -f "$GARDENER" ]; then
+  if [ ! -f "$GARDENER_STAMP" ] || [ -n "$(find "$GARDENER_STAMP" -mtime +7 2>/dev/null)" ]; then
+    # Detach fully so the hook returns immediately; discard all output.
+    ( nohup python3 "$GARDENER" --apply --brain "$BRAIN_PATH" \
+        >/dev/null 2>&1 & ) 2>/dev/null
+    brain_log_error "SessionStart" "Gardener triggered (stamp stale or missing)"
+  fi
+fi
+
 exit 0

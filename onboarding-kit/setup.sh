@@ -204,9 +204,12 @@ mkdir -p "$CLAUDE_DIR/tools"
 ln -sf "$REPO_DIR/tools/brain-dashboard.sh" "$CLAUDE_DIR/brain-dashboard.sh"
 ln -sf "$REPO_DIR/tools/brain-search"       "$CLAUDE_DIR/tools/brain-search"
 ln -sf "$REPO_DIR/tools/brain-search.py"    "$CLAUDE_DIR/tools/brain-search.py"
+ln -sf "$REPO_DIR/tools/brain-gardener.py"  "$CLAUDE_DIR/tools/brain-gardener.py"
+ln -sf "$REPO_DIR/tools/brain-backfill.py"  "$CLAUDE_DIR/tools/brain-backfill.py"
 chmod +x "$REPO_DIR/tools/brain-dashboard.sh" "$REPO_DIR/tools/brain-search"
 echo "  + brain-dashboard.sh symlinked to $CLAUDE_DIR/ (alias: brain)"
 echo "  + tools/brain-search + brain-search.py symlinked to $CLAUDE_DIR/tools/"
+echo "  + tools/brain-gardener.py + brain-backfill.py symlinked to $CLAUDE_DIR/tools/"
 
 echo ""
 
