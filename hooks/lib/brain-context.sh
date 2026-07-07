@@ -197,26 +197,43 @@ entry_matches_project() {
   local entry_project
   entry_project=$(get_frontmatter_field "project" "$file")
 
-  # Empty project field = no match via frontmatter
-  if [ -z "$entry_project" ]; then
-    return 1
+  # Fall back to plural `projects:` (YAML inline list or comma-separated) —
+  # the brain-synthesize template used the plural for months, which made all
+  # synthesis pages invisible to this matcher. Read both, forever.
+  local entry_values
+  if [ -n "$entry_project" ]; then
+    entry_values="$entry_project"
+  else
+    entry_values=$(get_frontmatter_field "projects" "$file" | tr -d '[]"' | tr ',' '\n')
+    if [ -z "$entry_values" ]; then
+      return 1
+    fi
   fi
 
-  local candidate
-  for candidate in $candidates; do
-    # Exact match
-    if [ "$entry_project" = "$candidate" ]; then
-      return 0
-    fi
-    # Fuzzy: candidate contains the project value (e.g. "homunculus-dev" contains "homunculus")
-    if printf '%s' "$candidate" | grep -qi "^${entry_project}" 2>/dev/null; then
-      return 0
-    fi
-    # Fuzzy: project value contains the candidate
-    if printf '%s' "$entry_project" | grep -qi "^${candidate}" 2>/dev/null; then
-      return 0
-    fi
-  done
+  local value candidate cand_lc
+  while IFS= read -r value; do
+    # Normalize: trim, lowercase, spaces -> dashes (so "Brookside Trading Post"
+    # can match a directory-derived candidate like "brookside-trading-post")
+    value=$(printf '%s' "$value" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+    [ -z "$value" ] && continue
+    for candidate in $candidates; do
+      cand_lc=$(printf '%s' "$candidate" | tr '[:upper:]' '[:lower:]')
+      # Exact match
+      if [ "$value" = "$cand_lc" ]; then
+        return 0
+      fi
+      # Fuzzy: candidate starts with the project value (e.g. "homunculus-dev" contains "homunculus")
+      if printf '%s' "$cand_lc" | grep -qi "^${value}" 2>/dev/null; then
+        return 0
+      fi
+      # Fuzzy: project value starts with the candidate
+      if printf '%s' "$value" | grep -qi "^${cand_lc}" 2>/dev/null; then
+        return 0
+      fi
+    done
+  done <<EOF_VALUES
+$entry_values
+EOF_VALUES
 
   return 1
 }
@@ -291,6 +308,13 @@ _is_global_entry() {
   entry_type=$(get_frontmatter_field "type" "$file")
 
   if [ "$entry_type" = "preference" ] || [ "$entry_type" = "global" ]; then
+    return 0
+  fi
+
+  # scope: global — explicit opt-in to every-session injection (canonical schema)
+  local entry_scope
+  entry_scope=$(get_frontmatter_field "scope" "$file")
+  if [ "$entry_scope" = "global" ]; then
     return 0
   fi
 
@@ -598,7 +622,9 @@ build_brain_context() {
   local global_active=false
   local newest_mtime=0
 
-  local budget="${BRAIN_TOKEN_BUDGET:-2000}"
+  # 4000 default: the old 2000 silently dropped matched knowledge 400+ times,
+  # including a project's own handoff on the day it was needed. Tune via env.
+  local budget="${BRAIN_TOKEN_BUDGET:-4000}"
   local used_tokens=0
   local assembled=""
 

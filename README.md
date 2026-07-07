@@ -47,7 +47,7 @@ bash onboarding-kit/setup.sh
 The setup script:
 1. Deploys the `brain-mode` agent to `~/.claude/agents/`
 2. Installs all global skills (23 skills)
-3. Deploys all hook scripts to `~/.claude/hooks/` (9 hooks + 2 libraries)
+3. Deploys all hook scripts to `~/.claude/hooks/` (10 hooks + 2 libraries)
 4. Registers hooks in `~/.claude/settings.json` (idempotent — safe to re-run)
 5. Deploys slash commands and the statusline script
 6. Verifies everything is in place
@@ -75,15 +75,16 @@ Brain mode uses hooks across 6 event types:
 |------|-------|-------------|
 | `session-start.sh` | SessionStart | Loads vault context into Claude's context window. Caches for fast `/clear` reloads. |
 | `pre-compact.sh` | PreCompact | Triggers capture before context window compaction. |
-| `post-tool-use.sh` | PostToolUse | Detects git commits and suggests capture. |
+| `post-tool-use.sh` | PostToolUse | Detects real git commits and appends a silent record to `brain-mode/commit-log.jsonl`. |
 | `session-guardian.sh` | PostToolUse | Monitors context % (warns at 70%/85%) and detects runaway research loops (5+ reads without writes). |
 | `post-tool-use-failure.sh` | PostToolUseFailure | Matches errors against stored patterns and surfaces past solutions with adaptive tier responses. |
 | `risk-classifier.sh` | PreToolUse | Blocks dangerous bash commands (`git reset --hard`, `rm -rf /`, `chmod 777`, etc.). |
 | `pre-commit-secrets.sh` | PreToolUse | Scans staged diffs for API keys, tokens, and private keys before allowing commits. |
 | `loop-detector.sh` | PreToolUse | Catches agents repeating identical tool calls 5+ times and breaks the loop. |
 | `notification-idle.sh` | Notification (idle) | Offers to capture when the session has content and the user pauses. One offer per session. |
+| `stop.sh` | Stop | Writes a mechanical session receipt to `brain-mode/session-log.jsonl`, ingests new GSD `.planning/` artifacts into `inbox/captures/`, and issues one silent distillation prompt when the session had capturable content. |
 
-A `stop.sh` hook is also included for project-level use (smart capture detection at session end) but is not deployed globally.
+Capture is **mechanical, not advisory**: `stop.sh` and `post-tool-use.sh` write to the vault themselves rather than asking you to run `/brain-capture`. The Stop hook is deployed and registered by default.
 
 ### Safety Hooks (PreToolUse)
 
@@ -242,7 +243,7 @@ claude-brain-toolkit/
     risk-classifier.sh          # PreToolUse — dangerous command blocking
     pre-commit-secrets.sh       # PreToolUse — secret leak prevention
     loop-detector.sh            # PreToolUse — repeated call detection
-    stop.sh                     # Stop — project-level capture (not global)
+    stop.sh                     # Stop — mechanical session capture + GSD ingestion (deployed globally)
     lib/
       brain-path.sh             # Shared utilities
       brain-context.sh          # Vault context builder

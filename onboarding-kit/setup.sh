@@ -157,6 +157,7 @@ cp "$REPO_DIR/hooks/pre-compact.sh" "$CLAUDE_DIR/hooks/pre-compact.sh"
 cp "$REPO_DIR/hooks/post-tool-use-failure.sh" "$CLAUDE_DIR/hooks/post-tool-use-failure.sh"
 cp "$REPO_DIR/hooks/post-tool-use.sh" "$CLAUDE_DIR/hooks/post-tool-use.sh"
 cp "$REPO_DIR/hooks/notification-idle.sh" "$CLAUDE_DIR/hooks/notification-idle.sh"
+cp "$REPO_DIR/hooks/stop.sh" "$CLAUDE_DIR/hooks/stop.sh"
 
 # v1.3 hooks — safety, session intelligence, loop detection
 cp "$REPO_DIR/hooks/risk-classifier.sh" "$CLAUDE_DIR/hooks/risk-classifier.sh"
@@ -174,6 +175,7 @@ echo "  + pre-compact.sh deployed"
 echo "  + post-tool-use-failure.sh deployed"
 echo "  + post-tool-use.sh deployed"
 echo "  + notification-idle.sh deployed"
+echo "  + stop.sh deployed"
 echo "  + risk-classifier.sh deployed"
 echo "  + pre-commit-secrets.sh deployed"
 echo "  + loop-detector.sh deployed"
@@ -273,6 +275,7 @@ BRAIN_HOOKS=$(cat <<'HOOKS_EOF'
     {"hooks":[{"type":"command","command":"~/.claude/hooks/loop-detector.sh","timeout":5}]}
   ],
   "SessionStart": [{"hooks":[{"type":"command","command":"~/.claude/hooks/session-start.sh","timeout":10}]}],
+  "Stop": [{"hooks":[{"type":"command","command":"~/.claude/hooks/stop.sh","timeout":15}]}],
   "PreCompact": [{"hooks":[{"type":"command","command":"~/.claude/hooks/pre-compact.sh","timeout":10}]}],
   "PostToolUseFailure": [{"hooks":[{"type":"command","command":"~/.claude/hooks/post-tool-use-failure.sh","timeout":10}]}],
   "PostToolUse": [

@@ -231,6 +231,7 @@ Used for files in `prompts/[domain]/[pattern-slug].md`:
 ---
 title: [Pattern Name]
 type: prompt-pattern
+project: [project-tag]    # REQUIRED — kebab-case tag from .brain.md (or repo name); without it the session-start loader can NEVER resurface this note. Use `global` for project-independent patterns.
 domain: [domain]
 interaction-mode: [automation | augmentation | agency]
 ai-fluency-dimensions: [delegation, description, discernment, diligence]

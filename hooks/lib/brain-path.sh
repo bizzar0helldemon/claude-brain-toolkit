@@ -163,6 +163,67 @@ init_pattern_store() {
 }
 
 # ------------------------------------------------------------------------------
+# migrate_pattern_store <store_path>
+#
+# One-time, self-healing migration: converts a legacy bare-array store
+# ([{id, pattern, solution, tags, encounters, last_seen}, ...]) to the v1
+# schema ({version, patterns:[{id, key, solution, tags, encounter_count,
+# first_seen, last_seen}]}) that every reader/writer in this toolkit expects.
+# The schema mismatch left pattern matching dead for 1,000+ failures — this
+# guarantees any vault heals on first hook firing. No-op for v1 stores.
+# Keeps a .legacy-backup copy. Never crashes the calling hook.
+#
+# Args:
+#   $1 — absolute path to pattern-store.json
+#
+# Return codes: 0 always
+# ------------------------------------------------------------------------------
+migrate_pattern_store() {
+  local store_path="$1"
+
+  if [ ! -f "$store_path" ]; then
+    return 0
+  fi
+
+  local is_array
+  is_array=$(jq -r 'if type == "array" then "yes" else "no" end' "$store_path" 2>/dev/null)
+  if [ "$is_array" != "yes" ]; then
+    return 0
+  fi
+
+  local now tmp_file
+  now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  tmp_file="${store_path}.tmp.$$"
+
+  if jq --arg now "$now" '{
+      version: "1",
+      created: $now,
+      updated: $now,
+      patterns: [ .[] | {
+        id: (.id // .key // "legacy"),
+        key: (.key // .pattern // ""),
+        solution: (.solution // ""),
+        tags: (.tags // []),
+        encounter_count: ((.encounter_count // .encounters // 1) | if type == "string" then (tonumber? // 1) else . end),
+        first_seen: (.first_seen // .last_seen // $now),
+        last_seen: (.last_seen // $now)
+      } | select(.key != "") ]
+    }' "$store_path" > "$tmp_file" 2>/dev/null; then
+    cp "$store_path" "${store_path}.legacy-backup" 2>/dev/null
+    if mv "$tmp_file" "$store_path" 2>/dev/null; then
+      brain_log_error "PatternStore" "Migrated legacy array store to v1 schema (backup: pattern-store.json.legacy-backup)"
+    else
+      rm -f "$tmp_file" 2>/dev/null
+    fi
+  else
+    rm -f "$tmp_file" 2>/dev/null
+    brain_log_error "PatternStore" "Legacy store migration failed for $store_path"
+  fi
+
+  return 0
+}
+
+# ------------------------------------------------------------------------------
 # update_encounter_count <store_path> <error_message>
 #
 # Increments encounter_count and sets last_seen for any pattern whose key

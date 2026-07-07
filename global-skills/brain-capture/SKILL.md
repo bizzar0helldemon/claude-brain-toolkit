@@ -101,6 +101,7 @@ For each completed entry:
    - File path: `{{SET_YOUR_BRAIN_PATH}}/prompts/[domain]/[slug].md`
    - File name: kebab-case from the title
    - All frontmatter fields populated
+   - `project:` REQUIRED — the kebab-case tag from the repo's `.brain.md` ("Brain project tag"), else the git repo basename, else `global`. Without this key the session-start loader can never resurface the note.
    - `created` and `last-used` set to today's date
    - Use `[[wiki links]]` for all cross-references
 
