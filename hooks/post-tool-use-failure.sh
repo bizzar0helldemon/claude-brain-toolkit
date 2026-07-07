@@ -23,9 +23,15 @@ if [ ! -f "$PATTERN_STORE" ]; then
   exit 0
 fi
 
+# Self-heal legacy stores: bare-array schema never matches the v1 reader below.
+# This mismatch silently killed pattern recall for 1,000+ failures — migrate loudly.
+migrate_pattern_store "$PATTERN_STORE"
+
 # Find first matching pattern (match error or command against pattern key, case-insensitive).
 # `. as $p` binds the pattern object before select so $p.key is accessible
 # inside contains() (which otherwise evaluates in string context after the pipe).
+# NOTE: jq stderr goes to the brain error log, NOT /dev/null — a broken store
+# must be loud (the old 2>/dev/null hid the schema mismatch for 3 months).
 MATCH=$(jq -r \
   --arg error_msg "$ERROR_MSG" \
   --arg command "$COMMAND" \
@@ -36,7 +42,7 @@ MATCH=$(jq -r \
      (($command | ascii_downcase) | contains($p.key | ascii_downcase))
    ) |
    .solution' \
-  "$PATTERN_STORE" 2>/dev/null | head -1)
+  "$PATTERN_STORE" 2>>"${BRAIN_PATH}/.brain-errors.log" | head -1)
 
 if [ -n "$MATCH" ]; then
   # Increment encounter count for matched pattern (must run first — read-after-write)
@@ -46,7 +52,7 @@ if [ -n "$MATCH" ]; then
   COUNT=$(jq -r \
     --arg err "$ERROR_MSG" \
     '.patterns[] | . as $p | select(($err | ascii_downcase) | contains($p.key | ascii_downcase)) | .encounter_count' \
-    "$PATTERN_STORE" 2>/dev/null | head -1)
+    "$PATTERN_STORE" 2>>"${BRAIN_PATH}/.brain-errors.log" | head -1)
 
   # Numeric guard — prevents bash errors on empty or non-numeric COUNT
   COUNT="${COUNT:-0}"

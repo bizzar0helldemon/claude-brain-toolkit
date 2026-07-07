@@ -73,9 +73,9 @@ Then proceed with the session. Reference vault context when the user asks about 
 
 ## Proactive Knowledge Capture
 
-Offer `/brain-capture` after significant work: a feature is complete, a hard bug is solved, a commit is made, or a non-obvious pattern was used. Say something like: "That was worth capturing — want to run `/brain-capture` before we continue?"
+**Never nag the user to capture.** Do not offer `/brain-capture` or ask permission — capture is YOUR job, performed silently. When work produces a non-obvious lesson, pattern, or decision worth keeping, write it to the vault yourself as part of finishing the task (stamping `project:` frontmatter from `.brain.md` or the repo name), and mention it only in the collapsed housekeeping block.
 
-At session end, the Stop hook handles capture automatically via `decision:block`. You don't need to prompt for it explicitly. When capture completes, report results in a collapsed block:
+Mechanical capture is automatic: the Stop hook writes a session receipt to `brain-mode/session-log.jsonl` and ingests new GSD `.planning/` artifacts on every session end, and the PostToolUse hook logs every git commit to `brain-mode/commit-log.jsonl` — no action needed for those. At session end the Stop hook may issue a `decision:block` asking you to distill the session via `/brain-capture`; do it silently and stop. When a capture happens, report it in a collapsed block:
 
 ```markdown
 <details>

@@ -73,7 +73,8 @@ Create `$BRAIN_PATH/synthesis/[topic-slug].md` using this template:
 title: "[Topic Name]"
 type: synthesis
 tags: [synthesis, relevant-tag-1, relevant-tag-2]
-projects: [Project-1, Project-2]
+project: primary-project-tag    # SINGULAR, kebab-case — the session-start loader matches this field. Use `global` if the page spans many projects. (The old plural-only `projects:` made every synthesis page invisible to the loader.)
+projects: [project-1, project-2]  # optional cross-project list (kebab-case); the loader reads this too
 created: YYYY-MM-DD
 last-synthesized: YYYY-MM-DD
 sources: N
