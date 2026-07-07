@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# PostToolUse hook — silent commit ledger (charter: fully-automatic memory).
+# PostToolUse hook — silent ledgers (charter: fully-automatic memory).
 #
-# On a real `git commit`, appends one JSONL record to
-# $BRAIN_PATH/brain-mode/commit-log.jsonl. No blocking, no nagging, no output.
-# (The old behavior — decision:block demanding /brain-capture after every
-# commit — violated the fully-automatic posture and substring-matched any
-# command merely containing "git commit". Removed 2026-07-07.)
+# Two silent, non-blocking concerns:
+#   Bash `git commit`  -> one record in brain-mode/commit-log.jsonl
+#   Read of a vault .md -> one "use" event in brain-mode/retrieval-log.jsonl
+# The use events are the missing half of the feedback loop: the gardener folds
+# them so "was this surfaced note ever actually opened" becomes measurable.
+# No blocking, no nagging, no output.
 
 HOOK_INPUT=$(cat)
 
@@ -17,9 +18,34 @@ if ! brain_path_validate; then
 fi
 
 TOOL_NAME=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_name // ""')
+
+# --- Read of a vault note -> feedback-loop use event -------------------------
+if [ "$TOOL_NAME" = "Read" ] || [ "$TOOL_NAME" = "Grep" ]; then
+  READ_PATH=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_input.file_path // .tool_input.path // ""')
+  # Resolve to an absolute path, then test containment in the vault.
+  case "$READ_PATH" in
+    "$BRAIN_PATH"/*)
+      REL="${READ_PATH#"${BRAIN_PATH}"/}"
+      # Only count knowledge notes, not the machinery/logs.
+      case "$REL" in
+        brain-mode/*|.*) ;;  # skip logs, state, hidden files
+        *.md)
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          SESSION="${CLAUDE_SESSION_ID:-$(date -u +%s)-$$}"
+          mkdir -p "$BRAIN_PATH/brain-mode" 2>/dev/null
+          jq -cn --arg ts "$NOW" --arg session "$SESSION" --arg path "$REL" \
+            '{ts:$ts,session:$session,path:$path,via:"read"}' \
+            >> "$BRAIN_PATH/brain-mode/retrieval-log.jsonl" 2>/dev/null
+          ;;
+      esac
+      ;;
+  esac
+  exit 0
+fi
+
 COMMAND=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_input.command // ""')
 
-# Only act on Bash tool calls
+# Only the commit ledger acts on Bash calls
 if [ "$TOOL_NAME" != "Bash" ]; then
   exit 0
 fi

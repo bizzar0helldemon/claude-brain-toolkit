@@ -86,6 +86,24 @@ Brain mode uses hooks across 6 event types:
 
 Capture is **mechanical, not advisory**: `stop.sh` and `post-tool-use.sh` write to the vault themselves rather than asking you to run `/brain-capture`. The Stop hook is deployed and registered by default.
 
+### Memory Lifecycle — the feedback loop
+
+Capture alone just accumulates. The gardener closes the loop so notes earn or lose their place in the session-start budget based on whether they actually get used:
+
+1. **Surface** — `session-start.sh` logs every injected note to `brain-mode/surface-log.jsonl`.
+2. **Observe** — `post-tool-use.sh` logs a `used` event to `brain-mode/retrieval-log.jsonl` whenever a vault note is Read.
+3. **Adjust** — `tools/brain-gardener.py` (lazy weekly trigger from `session-start.sh`, at most once per 7 days) folds those events into each note's frontmatter counters and applies status transitions:
+
+   ```
+   warm --(used ≥2×)--> hot
+   hot  --(surfaced ≥8× with 0 uses, or 30d cold)--> warm
+   warm --(90d idle, never used)--> archive        # skipped at session start, still searchable
+   archive --(180d further idle)--> tombstone       # body kept on disk forever
+   any archived/tombstoned --(any use)--> resurrected
+   ```
+
+   Exempt from decay (`decays: false`): `preference`, `identity`, `synthesis`. A **cold-start epoch** (`brain-mode/.brain-gardener-epoch`) measures idle time from when the loop began observing, so legacy notes are never archived before they've had a chance to surface. Every pass writes a dated `daily_notes/<date>-memory-health.md` report and a `brain-mode/metrics.jsonl` line, and commits the vault. Run it by hand anytime with `python3 tools/brain-gardener.py` (dry run) or `--apply`.
+
 ### Safety Hooks (PreToolUse)
 
 Three hooks run before every tool call to prevent common mistakes:
