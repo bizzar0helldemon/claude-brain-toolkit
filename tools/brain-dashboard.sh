@@ -137,7 +137,10 @@ do_launch_project() {
 }
 
 do_brain_here() {
-  cd "$LAUNCH_DIR" && exec claude --agent brain-mode
+  # Unquoted $BRAIN_CMD so it word-splits into args. It already carries
+  # --dangerously-skip-permissions in the correct order (--agent first).
+  # shellcheck disable=SC2086
+  cd "$LAUNCH_DIR" && exec $BRAIN_CMD
 }
 
 do_game_night() {
